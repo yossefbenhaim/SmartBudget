@@ -2,7 +2,7 @@ import { LayoutDashboard, Plus, List, Tags } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 
 const navItems = [
-  { title: "דשבורד", url: "/", icon: LayoutDashboard },
+  { title: "עמוד הבית", url: "/", icon: LayoutDashboard },
   { title: "הוספת תנועה", url: "/add", icon: Plus },
   { title: "תנועות", url: "/transactions", icon: List },
   { title: "קטגוריות", url: "/categories", icon: Tags },

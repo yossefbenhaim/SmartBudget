@@ -17,7 +17,7 @@ import {
 import { useBudget } from "@/context/BudgetContext";
 
 const navItems = [
-  { title: "דשבורד", url: "/", icon: LayoutDashboard },
+  { title: "עמוד הבית", url: "/", icon: LayoutDashboard },
   { title: "הוספת תנועה", url: "/add", icon: Plus },
   { title: "תנועות", url: "/transactions", icon: List },
   { title: "קטגוריות", url: "/categories", icon: Tags },
