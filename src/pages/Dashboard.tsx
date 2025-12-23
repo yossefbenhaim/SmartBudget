@@ -58,7 +58,7 @@ export default function Dashboard() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">דשבורד</h1>
+          <h1 className="text-3xl font-bold">עמוד הבית</h1>
           <p className="text-muted-foreground">סקירה כללית של התקציב</p>
         </div>
         <MonthSelector
