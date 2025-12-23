@@ -107,17 +107,22 @@ export default function Dashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name} (${(percent * 100).toFixed(0)}%)`
-                      }
+                      label={({ name, percent, x, y }) => (
+                        <text
+                          x={x}
+                          y={y}
+                          fill="#000000"
+                          fontWeight="bold"
+                          fontSize={14}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                        >
+                          {`${name} (${(percent * 100).toFixed(0)}%)`}
+                        </text>
+                      )}
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
-                      style={{
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        fill: '#000000',
-                      }}
                     >
                       {pieData.map((_, index) => (
                         <Cell
