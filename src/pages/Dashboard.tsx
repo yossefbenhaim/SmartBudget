@@ -113,6 +113,11 @@ export default function Dashboard() {
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
+                      style={{
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        fill: '#000000',
+                      }}
                     >
                       {pieData.map((_, index) => (
                         <Cell
