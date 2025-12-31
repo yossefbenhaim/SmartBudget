@@ -10,6 +10,7 @@ import {
   getMonthlyStats,
   getCategoryStats,
   getYearlyComparison,
+  getMonthlyComparison,
   formatCurrency,
 } from "@/utils/calculations";
 import { ResponsiveBar } from "@nivo/bar";
@@ -27,7 +28,8 @@ const COLORS = [
   "hsl(120, 84%, 54%)",
 ];
 
-
+const RANGE_OPTIONS = [3, 6, 12] as const;
+type ViewMode = 'year' | 'months';
 
 export default function Dashboard() {
   const { transactions, categories } = useBudget();
@@ -36,6 +38,8 @@ export default function Dashboard() {
   const [month, setMonth] = useState(new Date().getMonth());
   const [mounted, setMounted] = useState(false);
   const [barChartYear, setBarChartYear] = useState(new Date().getFullYear());
+  const [viewMode, setViewMode] = useState<ViewMode>('year');
+  const [chartRange, setChartRange] = useState<3 | 6 | 12>(6);
 
   useEffect(() => {
     setMounted(true);
@@ -51,7 +55,10 @@ export default function Dashboard() {
     month,
     "expense"
   );
-  const monthlyComparison = getYearlyComparison(transactions, barChartYear);
+  
+  const monthlyComparison = viewMode === 'year' 
+    ? getYearlyComparison(transactions, barChartYear)
+    : getMonthlyComparison(transactions, chartRange, 0);
 
   const nivoPieData = expensesByCategory.map((item, index) => ({
     id: item.categoryName,
@@ -177,25 +184,57 @@ export default function Dashboard() {
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl font-bold">הכנסות מול הוצאות</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => setBarChartYear(prev => prev - 1)}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <span className="text-lg font-semibold min-w-[60px] text-center">{barChartYear}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => setBarChartYear(prev => prev + 1)}
-                    disabled={barChartYear >= currentYear}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    {RANGE_OPTIONS.map((range) => (
+                      <Button
+                        key={range}
+                        variant={viewMode === 'months' && chartRange === range ? "default" : "outline"}
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          setViewMode('months');
+                          setChartRange(range);
+                        }}
+                      >
+                        {range}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="w-px h-6 bg-border" />
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => {
+                        setViewMode('year');
+                        setBarChartYear(prev => prev - 1);
+                      }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'year' ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 px-2 text-xs min-w-[50px]"
+                      onClick={() => setViewMode('year')}
+                    >
+                      {barChartYear}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => {
+                        setViewMode('year');
+                        setBarChartYear(prev => prev + 1);
+                      }}
+                      disabled={barChartYear >= currentYear}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
