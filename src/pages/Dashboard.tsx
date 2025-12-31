@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<ViewMode>('year');
   const [chartRange, setChartRange] = useState<3 | 6 | 12>(6);
   const [hoveredMonth, setHoveredMonth] = useState<{ year: number; month: number } | null>(null);
+  const [lockedMonth, setLockedMonth] = useState<{ year: number; month: number } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -57,15 +58,16 @@ export default function Dashboard() {
     ? getYearlyComparison(transactions, barChartYear)
     : getMonthlyComparison(transactions, chartRange, 0);
 
-  // Calculate date range for pie chart based on bar chart filter or hovered month
+  // Calculate date range for pie chart based on bar chart filter, locked month, or hovered month
+  const activeMonth = hoveredMonth || lockedMonth;
   const { pieStartDate, pieEndDate, pieDisplayLabel } = useMemo(() => {
-    if (hoveredMonth) {
-      const start = startOfMonth(new Date(hoveredMonth.year, hoveredMonth.month));
-      const end = endOfMonth(new Date(hoveredMonth.year, hoveredMonth.month));
+    if (activeMonth) {
+      const start = startOfMonth(new Date(activeMonth.year, activeMonth.month));
+      const end = endOfMonth(new Date(activeMonth.year, activeMonth.month));
       return {
         pieStartDate: start,
         pieEndDate: end,
-        pieDisplayLabel: `${hebrewMonths[hoveredMonth.month]} ${hoveredMonth.year}`
+        pieDisplayLabel: `${hebrewMonths[activeMonth.month]} ${activeMonth.year}`
       };
     }
     
@@ -87,7 +89,7 @@ export default function Dashboard() {
         pieDisplayLabel: `${chartRange} חודשים אחרונים`
       };
     }
-  }, [viewMode, barChartYear, chartRange, hoveredMonth]);
+  }, [viewMode, barChartYear, chartRange, activeMonth]);
 
   const expensesByCategory = getCategoryStatsForRange(
     transactions,
@@ -348,7 +350,6 @@ export default function Dashboard() {
                 enableLabel={false}
                 legends={[]}
                 onMouseEnter={(data) => {
-                  // Extract month from monthName
                   const shortMonths = ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יונ׳', 'יול׳', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'];
                   const monthIndex = shortMonths.indexOf(data.data.monthName as string);
                   if (monthIndex !== -1) {
@@ -356,6 +357,19 @@ export default function Dashboard() {
                   }
                 }}
                 onMouseLeave={() => setHoveredMonth(null)}
+                onClick={(data) => {
+                  const shortMonths = ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יונ׳', 'יול׳', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'];
+                  const monthIndex = shortMonths.indexOf(data.data.monthName as string);
+                  if (monthIndex !== -1) {
+                    const clickedMonth = { year: data.data.year as number, month: monthIndex };
+                    // Toggle: if same month is clicked again, unlock it
+                    if (lockedMonth && lockedMonth.year === clickedMonth.year && lockedMonth.month === clickedMonth.month) {
+                      setLockedMonth(null);
+                    } else {
+                      setLockedMonth(clickedMonth);
+                    }
+                  }
+                }}
                 tooltip={({ data }) => {
                   const income = Number(data.income);
                   const expenses = Number(data.expenses);
