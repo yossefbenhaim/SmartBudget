@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/StatCard";
@@ -22,6 +22,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { useTheme } from "next-themes";
 
 const COLORS = [
   "hsl(250, 84%, 54%)",
@@ -36,8 +37,16 @@ const COLORS = [
 
 export default function Dashboard() {
   const { transactions, categories } = useBudget();
+  const { resolvedTheme } = useTheme();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth());
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const labelColor = mounted && resolvedTheme === "dark" ? "#ffffff" : "#000000";
 
   const stats = getMonthlyStats(transactions, year, month);
   const expensesByCategory = getCategoryStats(
@@ -111,7 +120,7 @@ export default function Dashboard() {
                         <text
                           x={x}
                           y={y}
-                          fill="#000000"
+                          fill={labelColor}
                           fontWeight="bold"
                           fontSize={14}
                           textAnchor="middle"
