@@ -3,10 +3,38 @@ import { Transaction, Category, DEFAULT_CATEGORIES } from "@/types/budget";
 const TRANSACTIONS_KEY = "family_budget_transactions";
 const CATEGORIES_KEY = "family_budget_categories";
 
+// Bank transactions from imported data
+const bankTransactions: Transaction[] = [
+  {
+    id: "bank-1",
+    type: "expense",
+    amount: 3800,
+    date: "2025-12-29",
+    categoryId: "bills",
+    description: "שיק",
+  },
+  {
+    id: "bank-2",
+    type: "expense",
+    amount: 500,
+    date: "2025-12-29",
+    categoryId: "transport",
+    description: "העב' לאחר-נייד",
+  },
+  {
+    id: "bank-3",
+    type: "expense",
+    amount: 8,
+    date: "2025-12-28",
+    categoryId: "bills",
+    description: "מקס איט פיננסי",
+  },
+];
+
 // Sample transactions for demo
 const generateSampleTransactions = (): Transaction[] => {
   const now = new Date();
-  const transactions: Transaction[] = [];
+  const transactions: Transaction[] = [...bankTransactions];
   
   // Generate data for the last 8 months
   for (let monthOffset = 0; monthOffset < 8; monthOffset++) {
