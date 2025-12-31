@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, LayoutDashboard, Plus, List, Tags, RotateCcw } from "lucide-react";
+import { Menu, X, LayoutDashboard, Plus, List, Tags, RotateCcw, Wallet } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -18,6 +18,7 @@ import { useBudget } from "@/context/BudgetContext";
 
 const navItems = [
   { title: "עמוד הבית", url: "/", icon: LayoutDashboard },
+  { title: "יתרה והשקעות", url: "/balance", icon: Wallet },
   { title: "הוספת תנועה", url: "/add", icon: Plus },
   { title: "תנועות", url: "/transactions", icon: List },
   { title: "קטגוריות", url: "/categories", icon: Tags },

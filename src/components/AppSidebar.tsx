@@ -1,4 +1,4 @@
-import { LayoutDashboard, Plus, List, Tags, RotateCcw } from "lucide-react";
+import { LayoutDashboard, Plus, List, Tags, RotateCcw, Wallet } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -28,7 +28,8 @@ import { useBudget } from "@/context/BudgetContext";
 import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
-  { title: "דשבורד", url: "/", icon: LayoutDashboard },
+  { title: "עמוד הבית", url: "/", icon: LayoutDashboard },
+  { title: "יתרה והשקעות", url: "/balance", icon: Wallet },
   { title: "הוספת תנועה", url: "/add", icon: Plus },
   { title: "רשימת תנועות", url: "/transactions", icon: List },
   { title: "קטגוריות", url: "/categories", icon: Tags },
