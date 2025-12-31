@@ -16,7 +16,7 @@ export function Layout({ children }: LayoutProps) {
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">₪</span>
             </div>
-            <span className="font-bold text-lg hidden sm:block">Family Budget</span>
+            <span className="font-bold text-lg hidden sm:block">תקציב חכם</span>
           </div>
           <div className="hidden md:block h-6 w-px bg-border" />
           <TopNav />
