@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Wallet, ChevronRight, ChevronLeft } from "luc
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/StatCard";
 import { MonthSelector } from "@/components/MonthSelector";
+import { IncomeExpenseLegend } from "@/components/IncomeExpenseLegend";
 import { Button } from "@/components/ui/button";
 import { useBudget } from "@/context/BudgetContext";
 import {
@@ -204,6 +205,14 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
+
+              <IncomeExpenseLegend
+                className="self-end"
+                items={[
+                  { label: "הוצאות", color: "hsl(0, 84%, 60%)" },
+                  { label: "הכנסות", color: "hsl(142, 76%, 42%)" },
+                ]}
+              />
             </div>
           </CardHeader>
           <CardContent>
@@ -301,36 +310,7 @@ export default function Dashboard() {
                 enableGridY={true}
                 gridYValues={5}
                 enableLabel={false}
-                legends={[
-                  {
-                    dataFrom: 'keys',
-                    anchor: 'top-right',
-                    direction: 'column',
-                    justify: false,
-                    translateX: 20,
-                    translateY: -40,
-                    itemsSpacing: 8,
-                    itemWidth: 80,
-                    itemHeight: 20,
-                    itemDirection: 'left-to-right',
-                    itemTextColor: labelColor,
-                    itemOpacity: 1,
-                    symbolSize: 12,
-                    symbolShape: 'circle',
-                    effects: [
-                      {
-                        on: 'hover',
-                        style: {
-                          itemOpacity: 0.85,
-                        },
-                      },
-                    ],
-                    data: [
-                      { id: 'income', label: 'הכנסות', color: 'hsl(142, 76%, 42%)' },
-                      { id: 'expenses', label: 'הוצאות', color: 'hsl(0, 84%, 60%)' },
-                    ],
-                  },
-                ]}
+                legends={[]}
                 tooltip={({ data }) => {
                   const balance = data.income - data.expenses;
                   return (
