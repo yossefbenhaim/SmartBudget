@@ -204,34 +204,6 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={handlePrevPeriod}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={handleResetPeriod}
-                  disabled={chartOffset === 0}
-                >
-                  היום
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={handleNextPeriod}
-                  disabled={chartOffset === 0}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
           </CardHeader>
           <CardContent>
