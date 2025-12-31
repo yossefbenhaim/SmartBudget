@@ -343,18 +343,38 @@ export default function Dashboard() {
                     ],
                   },
                 ]}
-                tooltip={({ id, value, indexValue, color }) => (
-                  <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
-                    <div className="font-bold text-foreground mb-1 border-b border-border pb-1">{indexValue}</div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                      <span className="text-muted-foreground text-sm">
-                        {id === 'income' ? 'הכנסות' : 'הוצאות'}:
-                      </span>
-                      <span className="font-semibold text-foreground">{formatCurrency(value)}</span>
+                tooltip={({ data }) => {
+                  const balance = data.income - data.expenses;
+                  return (
+                    <div className="bg-popover border border-border rounded-xl shadow-xl p-4 min-w-[180px]">
+                      <div className="font-bold text-foreground text-center mb-3 pb-2 border-b border-border">
+                        {data.monthName} {data.year}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500" />
+                            <span className="text-muted-foreground text-sm">הכנסות</span>
+                          </div>
+                          <span className="font-semibold text-green-600">{formatCurrency(data.income)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-red-500" />
+                            <span className="text-muted-foreground text-sm">הוצאות</span>
+                          </div>
+                          <span className="font-semibold text-red-500">{formatCurrency(data.expenses)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 pt-2 mt-2 border-t border-border">
+                          <span className="text-muted-foreground text-sm font-medium">יתרה</span>
+                          <span className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                            {formatCurrency(balance)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                }}
                 role="application"
                 ariaLabel="Income vs Expenses chart"
                 motionConfig="gentle"
