@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import AddTransaction from "@/pages/AddTransaction";
 import Transactions from "@/pages/Transactions";
 import Categories from "@/pages/Categories";
+import Balance from "@/pages/Balance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
                 <Route path="/add" element={<AddTransaction />} />
                 <Route path="/transactions" element={<Transactions />} />
                 <Route path="/categories" element={<Categories />} />
+                <Route path="/balance" element={<Balance />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>
