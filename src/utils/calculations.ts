@@ -97,6 +97,27 @@ export const getMonthlyComparison = (
   return result;
 };
 
+export const getYearlyComparison = (
+  transactions: Transaction[],
+  year: number
+): { month: string; monthName: string; year: number; income: number; expenses: number }[] => {
+  const result: { month: string; monthName: string; year: number; income: number; expenses: number }[] = [];
+  const hebrewMonths = ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יונ׳', 'יול׳', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'];
+
+  for (let i = 0; i < 12; i++) {
+    const stats = getMonthlyStats(transactions, year, i);
+    result.push({
+      month: format(new Date(year, i, 1), "MM/yyyy"),
+      monthName: hebrewMonths[i],
+      year: year,
+      income: stats.totalIncome,
+      expenses: stats.totalExpenses,
+    });
+  }
+
+  return result;
+};
+
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("he-IL", {
     style: "currency",
