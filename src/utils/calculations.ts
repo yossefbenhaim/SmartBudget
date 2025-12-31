@@ -69,6 +69,43 @@ export const getCategoryStats = (
   return stats.sort((a, b) => b.total - a.total);
 };
 
+export const getCategoryStatsForRange = (
+  transactions: Transaction[],
+  categories: Category[],
+  type: "income" | "expense",
+  startDate: Date,
+  endDate: Date
+): CategoryStats[] => {
+  const filtered = transactions.filter((t) => {
+    const date = parseISO(t.date);
+    return (
+      t.type === type &&
+      isWithinInterval(date, { start: startDate, end: endDate })
+    );
+  });
+
+  const total = filtered.reduce((sum, t) => sum + t.amount, 0);
+
+  const categoryTotals = new Map<string, number>();
+  filtered.forEach((t) => {
+    const current = categoryTotals.get(t.categoryId) || 0;
+    categoryTotals.set(t.categoryId, current + t.amount);
+  });
+
+  const stats: CategoryStats[] = [];
+  categoryTotals.forEach((categoryTotal, categoryId) => {
+    const category = categories.find((c) => c.id === categoryId);
+    stats.push({
+      categoryId,
+      categoryName: category?.name || "לא ידוע",
+      total: categoryTotal,
+      percentage: total > 0 ? (categoryTotal / total) * 100 : 0,
+    });
+  });
+
+  return stats.sort((a, b) => b.total - a.total);
+};
+
 export const getMonthlyComparison = (
   transactions: Transaction[],
   monthsBack: number = 6,
