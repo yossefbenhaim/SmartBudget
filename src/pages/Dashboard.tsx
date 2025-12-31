@@ -11,14 +11,8 @@ import {
   getMonthlyComparison,
   formatCurrency,
 } from "@/utils/calculations";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
 import { ResponsiveBar } from "@nivo/bar";
+import { ResponsivePie } from "@nivo/pie";
 import { useTheme } from "next-themes";
 
 const COLORS = [
@@ -59,10 +53,15 @@ export default function Dashboard() {
   );
   const monthlyComparison = getMonthlyComparison(transactions, chartRange, chartOffset);
 
-  const pieData = expensesByCategory.map((item) => ({
-    name: item.categoryName,
+  const nivoPieData = expensesByCategory.map((item, index) => ({
+    id: item.categoryName,
+    label: item.categoryName,
     value: item.total,
+    color: COLORS[index % COLORS.length],
+    percentage: item.percentage,
   }));
+
+  const totalExpenses = expensesByCategory.reduce((sum, item) => sum + item.total, 0);
 
   const handlePrevPeriod = () => {
     setChartOffset(prev => prev + chartRange);
@@ -120,47 +119,63 @@ export default function Dashboard() {
             <CardTitle>הוצאות לפי קטגוריה</CardTitle>
           </CardHeader>
           <CardContent>
-            {pieData.length > 0 ? (
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent, x, y }) => (
-                        <text
-                          x={x}
-                          y={y}
-                          fill={labelColor}
-                          fontWeight="bold"
-                          fontSize={14}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                        >
-                          {`${name} (${(percent * 100).toFixed(0)}%)`}
-                        </text>
-                      )}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
+            {nivoPieData.length > 0 ? (
+              <div className="h-[320px]">
+                <ResponsivePie
+                  data={nivoPieData}
+                  margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                  innerRadius={0.5}
+                  padAngle={2}
+                  cornerRadius={6}
+                  activeOuterRadiusOffset={8}
+                  colors={{ datum: 'data.color' }}
+                  borderWidth={2}
+                  borderColor={{ from: 'color', modifiers: [['darker', 0.3]] }}
+                  enableArcLinkLabels={true}
+                  arcLinkLabelsSkipAngle={10}
+                  arcLinkLabelsTextColor={labelColor}
+                  arcLinkLabelsThickness={2}
+                  arcLinkLabelsColor={{ from: 'color' }}
+                  arcLinkLabelsDiagonalLength={12}
+                  arcLinkLabelsStraightLength={16}
+                  arcLabelsSkipAngle={10}
+                  arcLabelsTextColor="#ffffff"
+                  arcLabel={d => `${d.data.percentage.toFixed(0)}%`}
+                  tooltip={({ datum }) => (
+                    <div className="bg-popover border border-border rounded-xl shadow-xl p-4 min-w-[160px]">
+                      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: datum.color }}
                         />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: number) => formatCurrency(value)}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                        <span className="font-bold text-foreground">{datum.label}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground text-sm">סכום:</span>
+                          <span className="font-semibold text-foreground">{formatCurrency(datum.value)}</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground text-sm">אחוז:</span>
+                          <span className="font-semibold text-foreground">{datum.data.percentage.toFixed(1)}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  motionConfig="gentle"
+                  transitionMode="pushIn"
+                  legends={[]}
+                  theme={{
+                    text: {
+                      fontSize: 12,
+                      fontWeight: 600,
+                      fill: labelColor,
+                    },
+                  }}
+                />
               </div>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[320px] flex items-center justify-center text-muted-foreground">
                 אין הוצאות בחודש זה
               </div>
             )}
