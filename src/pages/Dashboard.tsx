@@ -21,6 +21,7 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  CartesianGrid,
 } from "recharts";
 import { useTheme } from "next-themes";
 
@@ -154,31 +155,108 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>הכנסות מול הוצאות (6 חודשים)</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl font-bold">הכנסות מול הוצאות (6 חודשים)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyComparison}>
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `₪${value / 1000}k`} />
-                  <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
+                <BarChart 
+                  data={monthlyComparison}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  barGap={8}
+                  barCategoryGap="20%"
+                >
+                  <defs>
+                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(142, 76%, 46%)" stopOpacity={1} />
+                      <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                    </linearGradient>
+                    <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(0, 84%, 65%)" stopOpacity={1} />
+                      <stop offset="100%" stopColor="hsl(0, 84%, 55%)" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    vertical={false} 
+                    stroke="hsl(var(--border))"
+                    opacity={0.5}
                   />
-                  <Legend />
+                  <XAxis 
+                    dataKey="month" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ 
+                      fill: labelColor, 
+                      fontWeight: 600,
+                      fontSize: 13
+                    }}
+                    dy={10}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => `₪${value / 1000}k`}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ 
+                      fill: labelColor, 
+                      fontWeight: 500,
+                      fontSize: 12
+                    }}
+                    dx={-10}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-popover border border-border rounded-lg shadow-lg p-3 min-w-[160px]">
+                            <p className="font-bold text-foreground mb-2 text-center border-b border-border pb-2">{label}</p>
+                            {payload.map((entry, index) => (
+                              <div key={index} className="flex items-center justify-between gap-4 py-1">
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: entry.name === 'הכנסות' ? 'hsl(142, 76%, 36%)' : 'hsl(0, 84%, 60%)' }}
+                                  />
+                                  <span className="text-muted-foreground text-sm">{entry.name}</span>
+                                </div>
+                                <span className="font-semibold text-foreground">
+                                  {formatCurrency(entry.value as number)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="top"
+                    height={36}
+                    iconType="circle"
+                    iconSize={10}
+                    formatter={(value) => (
+                      <span className="text-foreground font-semibold text-sm mr-2">{value}</span>
+                    )}
+                  />
                   <Bar
                     dataKey="income"
                     name="הכנסות"
-                    fill="hsl(142, 76%, 36%)"
-                    radius={[4, 4, 0, 0]}
+                    fill="url(#incomeGradient)"
+                    radius={[8, 8, 0, 0]}
+                    animationDuration={800}
+                    animationEasing="ease-out"
                   />
                   <Bar
                     dataKey="expenses"
                     name="הוצאות"
-                    fill="hsl(0, 84%, 60%)"
-                    radius={[4, 4, 0, 0]}
+                    fill="url(#expenseGradient)"
+                    radius={[8, 8, 0, 0]}
+                    animationDuration={800}
+                    animationEasing="ease-out"
                   />
                 </BarChart>
               </ResponsiveContainer>
