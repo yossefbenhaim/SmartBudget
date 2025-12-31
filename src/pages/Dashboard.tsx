@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, ChevronRight, ChevronLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/StatCard";
 import { MonthSelector } from "@/components/MonthSelector";
+import { Button } from "@/components/ui/button";
 import { useBudget } from "@/context/BudgetContext";
 import {
   getMonthlyStats,
@@ -31,12 +32,16 @@ const COLORS = [
   "hsl(120, 84%, 54%)",
 ];
 
+const RANGE_OPTIONS = [3, 6, 12] as const;
+
 export default function Dashboard() {
   const { transactions, categories } = useBudget();
   const { resolvedTheme } = useTheme();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth());
   const [mounted, setMounted] = useState(false);
+  const [chartRange, setChartRange] = useState<3 | 6 | 12>(6);
+  const [chartOffset, setChartOffset] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -52,12 +57,24 @@ export default function Dashboard() {
     month,
     "expense"
   );
-  const monthlyComparison = getMonthlyComparison(transactions, 6);
+  const monthlyComparison = getMonthlyComparison(transactions, chartRange, chartOffset);
 
   const pieData = expensesByCategory.map((item) => ({
     name: item.categoryName,
     value: item.total,
   }));
+
+  const handlePrevPeriod = () => {
+    setChartOffset(prev => prev + chartRange);
+  };
+
+  const handleNextPeriod = () => {
+    setChartOffset(prev => Math.max(0, prev - chartRange));
+  };
+
+  const handleResetPeriod = () => {
+    setChartOffset(0);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -152,7 +169,55 @@ export default function Dashboard() {
 
         <Card className="overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-bold">הכנסות מול הוצאות (6 חודשים)</CardTitle>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-bold">הכנסות מול הוצאות</CardTitle>
+                <div className="flex items-center gap-1">
+                  {RANGE_OPTIONS.map((range) => (
+                    <Button
+                      key={range}
+                      variant={chartRange === range ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        setChartRange(range);
+                        setChartOffset(0);
+                      }}
+                    >
+                      {range} חודשים
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={handlePrevPeriod}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={handleResetPeriod}
+                  disabled={chartOffset === 0}
+                >
+                  היום
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={handleNextPeriod}
+                  disabled={chartOffset === 0}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-[320px]">

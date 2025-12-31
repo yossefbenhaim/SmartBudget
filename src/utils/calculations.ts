@@ -71,13 +71,14 @@ export const getCategoryStats = (
 
 export const getMonthlyComparison = (
   transactions: Transaction[],
-  monthsBack: number = 6
+  monthsBack: number = 6,
+  offset: number = 0
 ): { month: string; income: number; expenses: number }[] => {
   const result: { month: string; income: number; expenses: number }[] = [];
   const now = new Date();
 
   for (let i = monthsBack - 1; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const date = new Date(now.getFullYear(), now.getMonth() - i - offset, 1);
     const stats = getMonthlyStats(
       transactions,
       date.getFullYear(),
