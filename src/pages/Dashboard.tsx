@@ -9,7 +9,7 @@ import { useBudget } from "@/context/BudgetContext";
 import {
   getMonthlyStats,
   getCategoryStats,
-  getMonthlyComparison,
+  getYearlyComparison,
   formatCurrency,
 } from "@/utils/calculations";
 import { ResponsiveBar } from "@nivo/bar";
@@ -27,7 +27,7 @@ const COLORS = [
   "hsl(120, 84%, 54%)",
 ];
 
-const RANGE_OPTIONS = [3, 6, 12] as const;
+
 
 export default function Dashboard() {
   const { transactions, categories } = useBudget();
@@ -35,8 +35,7 @@ export default function Dashboard() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth());
   const [mounted, setMounted] = useState(false);
-  const [chartRange, setChartRange] = useState<3 | 6 | 12>(6);
-  const [chartOffset, setChartOffset] = useState(0);
+  const [barChartYear, setBarChartYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     setMounted(true);
@@ -52,7 +51,7 @@ export default function Dashboard() {
     month,
     "expense"
   );
-  const monthlyComparison = getMonthlyComparison(transactions, chartRange, chartOffset);
+  const monthlyComparison = getYearlyComparison(transactions, barChartYear);
 
   const nivoPieData = expensesByCategory.map((item, index) => ({
     id: item.categoryName,
@@ -64,17 +63,7 @@ export default function Dashboard() {
 
   const totalExpenses = expensesByCategory.reduce((sum, item) => sum + item.total, 0);
 
-  const handlePrevPeriod = () => {
-    setChartOffset(prev => prev + chartRange);
-  };
-
-  const handleNextPeriod = () => {
-    setChartOffset(prev => Math.max(0, prev - chartRange));
-  };
-
-  const handleResetPeriod = () => {
-    setChartOffset(0);
-  };
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -188,21 +177,25 @@ export default function Dashboard() {
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl font-bold">הכנסות מול הוצאות</CardTitle>
-                <div className="flex items-center gap-1">
-                  {RANGE_OPTIONS.map((range) => (
-                    <Button
-                      key={range}
-                      variant={chartRange === range ? "default" : "outline"}
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => {
-                        setChartRange(range);
-                        setChartOffset(0);
-                      }}
-                    >
-                      {range} חודשים
-                    </Button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setBarChartYear(prev => prev - 1)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <span className="text-lg font-semibold min-w-[60px] text-center">{barChartYear}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setBarChartYear(prev => prev + 1)}
+                    disabled={barChartYear >= currentYear}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
@@ -260,44 +253,6 @@ export default function Dashboard() {
                   legendPosition: 'middle',
                   legendOffset: 55,
                   truncateTickAt: 0,
-                  renderTick: ({ x, y, value }) => {
-                    const dataPoint = monthlyComparison.find(d => d.monthName === value);
-                    const showYear = dataPoint && (
-                      monthlyComparison.indexOf(dataPoint) === 0 ||
-                      dataPoint.year !== monthlyComparison[monthlyComparison.indexOf(dataPoint) - 1]?.year
-                    );
-                    return (
-                      <g transform={`translate(${x},${y})`}>
-                        <text
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          y={16}
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            fill: labelColor,
-                          }}
-                        >
-                          {value}
-                        </text>
-                        {showYear && dataPoint && (
-                          <text
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            y={34}
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 500,
-                              fill: labelColor,
-                              opacity: 0.7,
-                            }}
-                          >
-                            {dataPoint.year}
-                          </text>
-                        )}
-                      </g>
-                    );
-                  },
                 }}
                 axisLeft={{
                   tickSize: 0,
@@ -312,7 +267,9 @@ export default function Dashboard() {
                 enableLabel={false}
                 legends={[]}
                 tooltip={({ data }) => {
-                  const balance = data.income - data.expenses;
+                  const income = Number(data.income);
+                  const expenses = Number(data.expenses);
+                  const balance = income - expenses;
                   return (
                     <div className="bg-popover border border-border rounded-xl shadow-xl p-4 min-w-[180px]">
                       <div className="font-bold text-foreground text-center mb-3 pb-2 border-b border-border">
@@ -324,14 +281,14 @@ export default function Dashboard() {
                             <div className="w-3 h-3 rounded-full bg-green-500" />
                             <span className="text-muted-foreground text-sm">הכנסות</span>
                           </div>
-                          <span className="font-semibold text-green-600">{formatCurrency(data.income)}</span>
+                          <span className="font-semibold text-green-600">{formatCurrency(income)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-red-500" />
                             <span className="text-muted-foreground text-sm">הוצאות</span>
                           </div>
-                          <span className="font-semibold text-red-500">{formatCurrency(data.expenses)}</span>
+                          <span className="font-semibold text-red-500">{formatCurrency(expenses)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-4 pt-2 mt-2 border-t border-border">
                           <span className="text-muted-foreground text-sm font-medium">יתרה</span>
