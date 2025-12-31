@@ -73,9 +73,10 @@ export const getMonthlyComparison = (
   transactions: Transaction[],
   monthsBack: number = 6,
   offset: number = 0
-): { month: string; income: number; expenses: number }[] => {
-  const result: { month: string; income: number; expenses: number }[] = [];
+): { month: string; monthName: string; year: number; income: number; expenses: number }[] => {
+  const result: { month: string; monthName: string; year: number; income: number; expenses: number }[] = [];
   const now = new Date();
+  const hebrewMonths = ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יונ׳', 'יול׳', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'];
 
   for (let i = monthsBack - 1; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i - offset, 1);
@@ -86,6 +87,8 @@ export const getMonthlyComparison = (
     );
     result.push({
       month: format(date, "MM/yyyy"),
+      monthName: hebrewMonths[date.getMonth()],
+      year: date.getFullYear(),
       income: stats.totalIncome,
       expenses: stats.totalExpenses,
     });
