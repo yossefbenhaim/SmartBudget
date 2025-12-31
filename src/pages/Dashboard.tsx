@@ -15,14 +15,9 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
   Tooltip,
-  Legend,
-  CartesianGrid,
 } from "recharts";
+import { ResponsiveBar } from "@nivo/bar";
 import { useTheme } from "next-themes";
 
 const COLORS = [
@@ -161,105 +156,135 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={monthlyComparison}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  barGap={8}
-                  barCategoryGap="20%"
-                >
-                  <defs>
-                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(142, 76%, 46%)" stopOpacity={1} />
-                      <stop offset="100%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
-                    </linearGradient>
-                    <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(0, 84%, 65%)" stopOpacity={1} />
-                      <stop offset="100%" stopColor="hsl(0, 84%, 55%)" stopOpacity={0.8} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid 
-                    strokeDasharray="3 3" 
-                    vertical={false} 
-                    stroke="hsl(var(--border))"
-                    opacity={0.5}
-                  />
-                  <XAxis 
-                    dataKey="month" 
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ 
-                      fill: labelColor, 
+              <ResponsiveBar
+                data={monthlyComparison}
+                keys={['income', 'expenses']}
+                indexBy="month"
+                margin={{ top: 50, right: 30, bottom: 50, left: 80 }}
+                padding={0.3}
+                groupMode="grouped"
+                valueScale={{ type: 'linear' }}
+                indexScale={{ type: 'band', round: true }}
+                colors={['hsl(142, 76%, 42%)', 'hsl(0, 84%, 60%)']}
+                defs={[
+                  {
+                    id: 'incomeGradient',
+                    type: 'linearGradient',
+                    colors: [
+                      { offset: 0, color: 'hsl(142, 76%, 52%)' },
+                      { offset: 100, color: 'hsl(142, 76%, 36%)' },
+                    ],
+                  },
+                  {
+                    id: 'expenseGradient',
+                    type: 'linearGradient',
+                    colors: [
+                      { offset: 0, color: 'hsl(0, 84%, 70%)' },
+                      { offset: 100, color: 'hsl(0, 84%, 55%)' },
+                    ],
+                  },
+                ]}
+                fill={[
+                  { match: { id: 'income' }, id: 'incomeGradient' },
+                  { match: { id: 'expenses' }, id: 'expenseGradient' },
+                ]}
+                borderRadius={6}
+                borderColor={{ from: 'color', modifiers: [['darker', 0.6]] }}
+                axisTop={null}
+                axisRight={null}
+                axisBottom={{
+                  tickSize: 0,
+                  tickPadding: 12,
+                  tickRotation: 0,
+                  legendPosition: 'middle',
+                  legendOffset: 40,
+                  truncateTickAt: 0,
+                }}
+                axisLeft={{
+                  tickSize: 0,
+                  tickPadding: 12,
+                  tickRotation: 0,
+                  format: (value) => `₪${Number(value) / 1000}k`,
+                  legendPosition: 'middle',
+                  legendOffset: -60,
+                }}
+                enableGridY={true}
+                gridYValues={5}
+                enableLabel={false}
+                legends={[
+                  {
+                    dataFrom: 'keys',
+                    anchor: 'top',
+                    direction: 'row',
+                    justify: false,
+                    translateX: 0,
+                    translateY: -40,
+                    itemsSpacing: 20,
+                    itemWidth: 100,
+                    itemHeight: 20,
+                    itemDirection: 'right-to-left',
+                    itemOpacity: 1,
+                    symbolSize: 14,
+                    symbolShape: 'circle',
+                    effects: [
+                      {
+                        on: 'hover',
+                        style: {
+                          itemOpacity: 0.85,
+                        },
+                      },
+                    ],
+                    data: [
+                      { id: 'income', label: 'הכנסות', color: 'hsl(142, 76%, 42%)' },
+                      { id: 'expenses', label: 'הוצאות', color: 'hsl(0, 84%, 60%)' },
+                    ],
+                  },
+                ]}
+                tooltip={({ id, value, indexValue, color }) => (
+                  <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
+                    <div className="font-bold text-foreground mb-1 border-b border-border pb-1">{indexValue}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                      <span className="text-muted-foreground text-sm">
+                        {id === 'income' ? 'הכנסות' : 'הוצאות'}:
+                      </span>
+                      <span className="font-semibold text-foreground">{formatCurrency(value)}</span>
+                    </div>
+                  </div>
+                )}
+                role="application"
+                ariaLabel="Income vs Expenses chart"
+                motionConfig="gentle"
+                theme={{
+                  text: {
+                    fontSize: 13,
+                    fontWeight: 600,
+                    fill: labelColor,
+                  },
+                  axis: {
+                    ticks: {
+                      text: {
+                        fontSize: 12,
+                        fontWeight: 500,
+                        fill: labelColor,
+                      },
+                    },
+                  },
+                  grid: {
+                    line: {
+                      stroke: mounted && resolvedTheme === 'dark' ? 'hsl(0, 0%, 25%)' : 'hsl(0, 0%, 85%)',
+                      strokeDasharray: '4 4',
+                    },
+                  },
+                  legends: {
+                    text: {
+                      fontSize: 13,
                       fontWeight: 600,
-                      fontSize: 13
-                    }}
-                    dy={10}
-                  />
-                  <YAxis 
-                    tickFormatter={(value) => `₪${value / 1000}k`}
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ 
-                      fill: labelColor, 
-                      fontWeight: 500,
-                      fontSize: 12
-                    }}
-                    dx={-10}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
-                    content={({ active, payload, label }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-popover border border-border rounded-lg shadow-lg p-3 min-w-[160px]">
-                            <p className="font-bold text-foreground mb-2 text-center border-b border-border pb-2">{label}</p>
-                            {payload.map((entry, index) => (
-                              <div key={index} className="flex items-center justify-between gap-4 py-1">
-                                <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-3 h-3 rounded-full" 
-                                    style={{ backgroundColor: entry.name === 'הכנסות' ? 'hsl(142, 76%, 36%)' : 'hsl(0, 84%, 60%)' }}
-                                  />
-                                  <span className="text-muted-foreground text-sm">{entry.name}</span>
-                                </div>
-                                <span className="font-semibold text-foreground">
-                                  {formatCurrency(entry.value as number)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Legend 
-                    verticalAlign="top"
-                    height={36}
-                    iconType="circle"
-                    iconSize={10}
-                    formatter={(value) => (
-                      <span className="text-foreground font-semibold text-sm mr-2">{value}</span>
-                    )}
-                  />
-                  <Bar
-                    dataKey="income"
-                    name="הכנסות"
-                    fill="url(#incomeGradient)"
-                    radius={[8, 8, 0, 0]}
-                    animationDuration={800}
-                    animationEasing="ease-out"
-                  />
-                  <Bar
-                    dataKey="expenses"
-                    name="הוצאות"
-                    fill="url(#expenseGradient)"
-                    radius={[8, 8, 0, 0]}
-                    animationDuration={800}
-                    animationEasing="ease-out"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+                      fill: labelColor,
+                    },
+                  },
+                }}
+              />
             </div>
           </CardContent>
         </Card>
