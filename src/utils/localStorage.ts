@@ -3,11 +3,81 @@ import { Transaction, Category, DEFAULT_CATEGORIES } from "@/types/budget";
 const TRANSACTIONS_KEY = "family_budget_transactions";
 const CATEGORIES_KEY = "family_budget_categories";
 
+// Sample transactions for demo
+const generateSampleTransactions = (): Transaction[] => {
+  const now = new Date();
+  const transactions: Transaction[] = [];
+  
+  // Generate data for the last 8 months
+  for (let monthOffset = 0; monthOffset < 8; monthOffset++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    
+    // Income - salary
+    transactions.push({
+      id: `salary-${year}-${month}`,
+      type: "income",
+      amount: 15000 + Math.floor(Math.random() * 2000),
+      date: new Date(year, month, 10).toISOString().split('T')[0],
+      categoryId: "salary",
+      description: "משכורת חודשית",
+    });
+    
+    // Occasional bonus
+    if (Math.random() > 0.7) {
+      transactions.push({
+        id: `bonus-${year}-${month}`,
+        type: "income",
+        amount: 2000 + Math.floor(Math.random() * 3000),
+        date: new Date(year, month, 15).toISOString().split('T')[0],
+        categoryId: "bonus",
+        description: "בונוס",
+      });
+    }
+    
+    // Expenses
+    const expenseData = [
+      { categoryId: "food", description: "סופר", minAmount: 800, maxAmount: 1500, count: 4 },
+      { categoryId: "transport", description: "דלק", minAmount: 400, maxAmount: 800, count: 2 },
+      { categoryId: "rent", description: "שכירות", minAmount: 4500, maxAmount: 5500, count: 1 },
+      { categoryId: "bills", description: "חשבון חשמל", minAmount: 200, maxAmount: 500, count: 1 },
+      { categoryId: "bills", description: "חשבון מים", minAmount: 100, maxAmount: 200, count: 1 },
+      { categoryId: "entertainment", description: "מסעדה", minAmount: 150, maxAmount: 400, count: 2 },
+      { categoryId: "health", description: "קופת חולים", minAmount: 100, maxAmount: 300, count: 1 },
+      { categoryId: "shopping", description: "קניות", minAmount: 200, maxAmount: 600, count: 2 },
+    ];
+    
+    expenseData.forEach(({ categoryId, description, minAmount, maxAmount, count }) => {
+      for (let i = 0; i < count; i++) {
+        const day = Math.floor(Math.random() * 28) + 1;
+        transactions.push({
+          id: `${categoryId}-${year}-${month}-${i}`,
+          type: "expense",
+          amount: minAmount + Math.floor(Math.random() * (maxAmount - minAmount)),
+          date: new Date(year, month, day).toISOString().split('T')[0],
+          categoryId,
+          description: `${description}${count > 1 ? ` ${i + 1}` : ''}`,
+        });
+      }
+    });
+  }
+  
+  return transactions;
+};
+
 // Transactions
 export const getTransactions = (): Transaction[] => {
   try {
     const stored = localStorage.getItem(TRANSACTIONS_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.length > 0) return parsed;
+    }
+    // Initialize with sample data if empty
+    const sampleData = generateSampleTransactions();
+    saveTransactions(sampleData);
+    return sampleData;
   } catch {
     return [];
   }
