@@ -239,6 +239,7 @@ export default function Dashboard() {
                         onClick={() => {
                           setViewMode('months');
                           setChartRange(range);
+                          setLockedMonth(null);
                         }}
                       >
                         {range} חודשים
@@ -254,6 +255,7 @@ export default function Dashboard() {
                       onClick={() => {
                         setViewMode('year');
                         setBarChartYear(prev => prev - 1);
+                        setLockedMonth(null);
                       }}
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -262,7 +264,10 @@ export default function Dashboard() {
                       variant={viewMode === 'year' ? "default" : "outline"}
                       size="sm"
                       className="h-7 px-2 text-xs min-w-[50px]"
-                      onClick={() => setViewMode('year')}
+                      onClick={() => {
+                        setViewMode('year');
+                        setLockedMonth(null);
+                      }}
                     >
                       {barChartYear}
                     </Button>
@@ -273,6 +278,7 @@ export default function Dashboard() {
                       onClick={() => {
                         setViewMode('year');
                         setBarChartYear(prev => prev + 1);
+                        setLockedMonth(null);
                       }}
                       disabled={barChartYear >= currentYear}
                     >
