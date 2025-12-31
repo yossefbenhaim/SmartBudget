@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { TopNav } from "@/components/TopNav";
 import { MobileNav } from "@/components/MobileNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,7 +21,10 @@ export function Layout({ children }: LayoutProps) {
           <div className="hidden md:block h-6 w-px bg-border" />
           <TopNav />
         </div>
-        <MobileNav />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <MobileNav />
+        </div>
       </header>
       <main className="flex-1 p-4 md:p-6 overflow-auto">
         {children}
