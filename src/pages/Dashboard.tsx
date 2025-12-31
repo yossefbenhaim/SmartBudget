@@ -224,8 +224,8 @@ export default function Dashboard() {
               <ResponsiveBar
                 data={monthlyComparison}
                 keys={['income', 'expenses']}
-                indexBy="month"
-                margin={{ top: 50, right: 30, bottom: 50, left: 80 }}
+                indexBy="monthName"
+                margin={{ top: 50, right: 30, bottom: 70, left: 80 }}
                 padding={0.3}
                 groupMode="grouped"
                 valueScale={{ type: 'linear' }}
@@ -259,11 +259,49 @@ export default function Dashboard() {
                 axisRight={null}
                 axisBottom={{
                   tickSize: 0,
-                  tickPadding: 12,
+                  tickPadding: 8,
                   tickRotation: 0,
                   legendPosition: 'middle',
-                  legendOffset: 40,
+                  legendOffset: 55,
                   truncateTickAt: 0,
+                  renderTick: ({ x, y, value }) => {
+                    const dataPoint = monthlyComparison.find(d => d.monthName === value);
+                    const showYear = dataPoint && (
+                      monthlyComparison.indexOf(dataPoint) === 0 ||
+                      dataPoint.year !== monthlyComparison[monthlyComparison.indexOf(dataPoint) - 1]?.year
+                    );
+                    return (
+                      <g transform={`translate(${x},${y})`}>
+                        <text
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          y={16}
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            fill: labelColor,
+                          }}
+                        >
+                          {value}
+                        </text>
+                        {showYear && dataPoint && (
+                          <text
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            y={34}
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 500,
+                              fill: labelColor,
+                              opacity: 0.7,
+                            }}
+                          >
+                            {dataPoint.year}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  },
                 }}
                 axisLeft={{
                   tickSize: 0,
