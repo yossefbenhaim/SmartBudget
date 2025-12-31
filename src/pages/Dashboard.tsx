@@ -304,17 +304,17 @@ export default function Dashboard() {
                 legends={[
                   {
                     dataFrom: 'keys',
-                    anchor: 'top',
-                    direction: 'row',
+                    anchor: 'top-right',
+                    direction: 'column',
                     justify: false,
-                    translateX: 0,
+                    translateX: 20,
                     translateY: -40,
-                    itemsSpacing: 20,
-                    itemWidth: 100,
+                    itemsSpacing: 8,
+                    itemWidth: 80,
                     itemHeight: 20,
                     itemDirection: 'right-to-left',
                     itemOpacity: 1,
-                    symbolSize: 14,
+                    symbolSize: 12,
                     symbolShape: 'circle',
                     effects: [
                       {
