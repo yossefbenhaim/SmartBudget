@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -12,6 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format, isSameDay } from "date-fns";
+import { he } from "date-fns/locale";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { useBudget } from "@/context/BudgetContext";
 import { useToast } from "@/hooks/use-toast";
@@ -20,15 +29,18 @@ import { cn } from "@/lib/utils";
 
 export default function AddTransaction() {
   const navigate = useNavigate();
-  const { categories, addTransaction } = useBudget();
+  const { categories, addTransaction, transactions } = useBudget();
   const { toast } = useToast();
 
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState<Date>(new Date());
   const [categoryId, setCategoryId] = useState("");
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Get days with transactions
+  const daysWithTransactions = transactions.map((t) => new Date(t.date));
 
   const filteredCategories = categories.filter(
     (c) => c.type === type || c.type === "both"
@@ -61,7 +73,7 @@ export default function AddTransaction() {
     addTransaction({
       type,
       amount: parseFloat(amount),
-      date,
+      date: format(date, "yyyy-MM-dd"),
       categoryId,
       description,
     });
@@ -144,14 +156,42 @@ export default function AddTransaction() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">תאריך</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className={cn(errors.date && "border-destructive")}
-              />
+              <Label>תאריך</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-right font-normal",
+                      !date && "text-muted-foreground",
+                      errors.date && "border-destructive"
+                    )}
+                  >
+                    <CalendarIcon className="ml-2 h-4 w-4" />
+                    {date ? format(date, "dd MMMM yyyy", { locale: he }) : "בחר תאריך"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(d) => d && setDate(d)}
+                    locale={he}
+                    className="pointer-events-auto"
+                    modifiers={{
+                      hasTransaction: (day) =>
+                        daysWithTransactions.some((d) => isSameDay(d, day)),
+                    }}
+                    modifiersClassNames={{
+                      hasTransaction: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-expense after:rounded-full",
+                    }}
+                  />
+                  <div className="p-3 border-t flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <span className="w-2 h-2 bg-expense rounded-full"></span>
+                    <span>ימים עם תנועות קיימות</span>
+                  </div>
+                </PopoverContent>
+              </Popover>
               {errors.date && (
                 <p className="text-sm text-destructive">{errors.date}</p>
               )}
