@@ -134,18 +134,24 @@ export default function Dashboard() {
           amount={stats.totalIncome}
           icon={TrendingUp}
           variant="income"
+          year={year}
+          month={month}
         />
         <StatCard
           title="סה״כ הוצאות"
           amount={stats.totalExpenses}
           icon={TrendingDown}
           variant="expense"
+          year={year}
+          month={month}
         />
         <StatCard
           title="יתרה"
           amount={stats.balance}
           icon={Wallet}
           variant="balance"
+          year={year}
+          month={month}
         />
       </div>
 

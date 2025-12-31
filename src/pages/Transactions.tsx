@@ -56,10 +56,15 @@ export default function Transactions() {
   const highlightId = searchParams.get("highlight");
   const highlightRef = useRef<HTMLTableRowElement>(null);
 
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth());
+  // Get initial values from URL params
+  const initialYear = searchParams.get("year") ? parseInt(searchParams.get("year")!) : new Date().getFullYear();
+  const initialMonth = searchParams.get("month") ? parseInt(searchParams.get("month")!) : new Date().getMonth();
+  const initialType = searchParams.get("type") || "all";
+  
+  const [year, setYear] = useState(initialYear);
+  const [month, setMonth] = useState(initialMonth);
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>(initialType);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const [editingTransaction, setEditingTransaction] =
