@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, Download, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,9 @@ export default function Transactions() {
   const { transactions, categories, updateTransaction, deleteTransaction } =
     useBudget();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const highlightId = searchParams.get("highlight");
+  const highlightRef = useRef<HTMLTableRowElement>(null);
 
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth());
@@ -69,6 +73,29 @@ export default function Transactions() {
     categoryId: "",
     description: "",
   });
+
+  // Set month/year based on highlighted transaction
+  useEffect(() => {
+    if (highlightId) {
+      const transaction = transactions.find((t) => t.id === highlightId);
+      if (transaction) {
+        const date = parseISO(transaction.date);
+        setYear(date.getFullYear());
+        setMonth(date.getMonth());
+      }
+    }
+  }, [highlightId, transactions]);
+
+  // Scroll to highlighted transaction
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Clear the highlight param after a delay
+      setTimeout(() => {
+        setSearchParams({});
+      }, 3000);
+    }
+  }, [highlightId, setSearchParams]);
 
   const filteredTransactions = useMemo(() => {
     const startDate = startOfMonth(new Date(year, month));
@@ -258,7 +285,14 @@ export default function Transactions() {
                 filteredTransactions
                   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                   .map((transaction) => (
-                    <TableRow key={transaction.id}>
+                    <TableRow
+                      key={transaction.id}
+                      ref={transaction.id === highlightId ? highlightRef : null}
+                      className={cn(
+                        transaction.id === highlightId &&
+                          "bg-primary/10 animate-pulse"
+                      )}
+                    >
                       <TableCell>{formatDate(transaction.date)}</TableCell>
                       <TableCell>
                         <Badge
