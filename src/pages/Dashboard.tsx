@@ -207,7 +207,7 @@ export default function Dashboard() {
               </div>
 
               <IncomeExpenseLegend
-                className="self-end"
+                className="self-start"
                 items={[
                   { label: "הוצאות", color: "hsl(0, 84%, 60%)" },
                   { label: "הכנסות", color: "hsl(142, 76%, 42%)" },
