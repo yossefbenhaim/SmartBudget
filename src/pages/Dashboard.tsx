@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TrendingUp, TrendingDown, Wallet, ChevronRight, ChevronLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/StatCard";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useBudget } from "@/context/BudgetContext";
 import {
   getMonthlyStats,
-  getCategoryStats,
+  getCategoryStatsForRange,
   getYearlyComparison,
   getMonthlyComparison,
   formatCurrency,
@@ -16,6 +16,7 @@ import {
 import { ResponsiveBar } from "@nivo/bar";
 import { ResponsivePie } from "@nivo/pie";
 import { useTheme } from "next-themes";
+import { startOfMonth, endOfMonth, subMonths } from "date-fns";
 
 const COLORS = [
   "hsl(250, 84%, 54%)",
@@ -31,6 +32,8 @@ const COLORS = [
 const RANGE_OPTIONS = [3, 6, 12] as const;
 type ViewMode = 'year' | 'months';
 
+const hebrewMonths = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
 export default function Dashboard() {
   const { transactions, categories } = useBudget();
   const { resolvedTheme } = useTheme();
@@ -40,6 +43,7 @@ export default function Dashboard() {
   const [barChartYear, setBarChartYear] = useState(new Date().getFullYear());
   const [viewMode, setViewMode] = useState<ViewMode>('year');
   const [chartRange, setChartRange] = useState<3 | 6 | 12>(6);
+  const [hoveredMonth, setHoveredMonth] = useState<{ year: number; month: number } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -48,17 +52,50 @@ export default function Dashboard() {
   const labelColor = mounted && resolvedTheme === "dark" ? "#ffffff" : "#000000";
 
   const stats = getMonthlyStats(transactions, year, month);
-  const expensesByCategory = getCategoryStats(
-    transactions,
-    categories,
-    year,
-    month,
-    "expense"
-  );
   
   const monthlyComparison = viewMode === 'year' 
     ? getYearlyComparison(transactions, barChartYear)
     : getMonthlyComparison(transactions, chartRange, 0);
+
+  // Calculate date range for pie chart based on bar chart filter or hovered month
+  const { pieStartDate, pieEndDate, pieDisplayLabel } = useMemo(() => {
+    if (hoveredMonth) {
+      const start = startOfMonth(new Date(hoveredMonth.year, hoveredMonth.month));
+      const end = endOfMonth(new Date(hoveredMonth.year, hoveredMonth.month));
+      return {
+        pieStartDate: start,
+        pieEndDate: end,
+        pieDisplayLabel: `${hebrewMonths[hoveredMonth.month]} ${hoveredMonth.year}`
+      };
+    }
+    
+    if (viewMode === 'year') {
+      const start = new Date(barChartYear, 0, 1);
+      const end = new Date(barChartYear, 11, 31);
+      return {
+        pieStartDate: start,
+        pieEndDate: end,
+        pieDisplayLabel: `שנת ${barChartYear}`
+      };
+    } else {
+      const now = new Date();
+      const end = endOfMonth(now);
+      const start = startOfMonth(subMonths(now, chartRange - 1));
+      return {
+        pieStartDate: start,
+        pieEndDate: end,
+        pieDisplayLabel: `${chartRange} חודשים אחרונים`
+      };
+    }
+  }, [viewMode, barChartYear, chartRange, hoveredMonth]);
+
+  const expensesByCategory = getCategoryStatsForRange(
+    transactions,
+    categories,
+    "expense",
+    pieStartDate,
+    pieEndDate
+  );
 
   const nivoPieData = expensesByCategory.map((item, index) => ({
     id: item.categoryName,
@@ -113,7 +150,12 @@ export default function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>הוצאות לפי קטגוריה</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>הוצאות לפי קטגוריה</CardTitle>
+              <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                {pieDisplayLabel}
+              </span>
+            </div>
           </CardHeader>
           <CardContent>
             {nivoPieData.length > 0 ? (
@@ -305,6 +347,15 @@ export default function Dashboard() {
                 gridYValues={5}
                 enableLabel={false}
                 legends={[]}
+                onMouseEnter={(data) => {
+                  // Extract month from monthName
+                  const shortMonths = ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יונ׳', 'יול׳', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'];
+                  const monthIndex = shortMonths.indexOf(data.data.monthName as string);
+                  if (monthIndex !== -1) {
+                    setHoveredMonth({ year: data.data.year as number, month: monthIndex });
+                  }
+                }}
+                onMouseLeave={() => setHoveredMonth(null)}
                 tooltip={({ data }) => {
                   const income = Number(data.income);
                   const expenses = Number(data.expenses);
