@@ -197,7 +197,7 @@ export default function Dashboard() {
                           setChartRange(range);
                         }}
                       >
-                        {range}
+                        {range} חודשים
                       </Button>
                     ))}
                   </div>
