@@ -1,15 +1,13 @@
 import { ChevronRight, ChevronLeft, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format, startOfMonth, endOfMonth, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { he } from "date-fns/locale";
-import { useBudget } from "@/context/BudgetContext";
-import { cn } from "@/lib/utils";
+import { TransactionCalendar } from "@/components/TransactionCalendar";
 
 interface MonthSelectorProps {
   year: number;
@@ -18,19 +16,7 @@ interface MonthSelectorProps {
 }
 
 export function MonthSelector({ year, month, onChange }: MonthSelectorProps) {
-  const { transactions } = useBudget();
   const date = new Date(year, month);
-
-  // Get days with transactions for the current month
-  const monthStart = startOfMonth(date);
-  const monthEnd = endOfMonth(date);
-  
-  const daysWithTransactions = transactions
-    .filter((t) => {
-      const tDate = new Date(t.date);
-      return tDate >= monthStart && tDate <= monthEnd;
-    })
-    .map((t) => new Date(t.date));
 
   const handlePrevMonth = () => {
     if (month === 0) {
@@ -53,10 +39,8 @@ export function MonthSelector({ year, month, onChange }: MonthSelectorProps) {
     onChange(now.getFullYear(), now.getMonth());
   };
 
-  const handleDaySelect = (selectedDate: Date | undefined) => {
-    if (selectedDate) {
-      onChange(selectedDate.getFullYear(), selectedDate.getMonth());
-    }
+  const handleDaySelect = (selectedDate: Date) => {
+    onChange(selectedDate.getFullYear(), selectedDate.getMonth());
   };
 
   return (
@@ -75,28 +59,14 @@ export function MonthSelector({ year, month, onChange }: MonthSelectorProps) {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="center">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={handleDaySelect}
+          <TransactionCalendar
             month={date}
             onMonthChange={(newMonth) => {
               onChange(newMonth.getFullYear(), newMonth.getMonth());
             }}
-            locale={he}
-            className="pointer-events-auto"
-            modifiers={{
-              hasTransaction: (day) =>
-                daysWithTransactions.some((d) => isSameDay(d, day)),
-            }}
-            modifiersClassNames={{
-              hasTransaction: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-expense after:rounded-full",
-            }}
+            onDaySelect={handleDaySelect}
+            selectedDate={date}
           />
-          <div className="p-3 border-t flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <span className="w-2 h-2 bg-expense rounded-full"></span>
-            <span>ימים עם תנועות</span>
-          </div>
         </PopoverContent>
       </Popover>
       
