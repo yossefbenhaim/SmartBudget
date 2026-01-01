@@ -231,10 +231,10 @@ export default function Dashboard() {
         <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-xl font-bold">הכנסות מול הוצאות</CardTitle>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-1 flex-wrap">
                     {RANGE_OPTIONS.map((range) => (
                       <Button
                         key={range}
@@ -247,11 +247,12 @@ export default function Dashboard() {
                           setLockedMonth(null);
                         }}
                       >
-                        {range} חודשים
+                        <span className="hidden sm:inline">{range} חודשים</span>
+                        <span className="sm:hidden">{range}ח׳</span>
                       </Button>
                     ))}
                   </div>
-                  <div className="w-px h-6 bg-border" />
+                  <div className="w-px h-6 bg-border hidden sm:block" />
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
@@ -294,22 +295,22 @@ export default function Dashboard() {
               </div>
 
               <IncomeExpenseLegend
-                className="self-start"
+                className="self-start sm:self-start"
                 items={[
-                  { label: "הוצאות", color: "hsl(0, 84%, 60%)" },
                   { label: "הכנסות", color: "hsl(142, 76%, 42%)" },
+                  { label: "הוצאות", color: "hsl(0, 84%, 60%)" },
                 ]}
               />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="h-[320px]">
+          <CardContent className="p-3 pt-0 sm:p-6">
+            <div className="h-[350px] sm:h-[320px]">
               <ResponsiveBar
                 data={monthlyComparison}
                 keys={['income', 'expenses']}
                 indexBy="monthName"
-                margin={{ top: 50, right: 30, bottom: 70, left: 80 }}
-                padding={0.3}
+                margin={{ top: 30, right: 10, bottom: 80, left: 60 }}
+                padding={0.35}
                 groupMode="grouped"
                 valueScale={{ type: 'linear' }}
                 indexScale={{ type: 'band', round: true }}
@@ -342,19 +343,19 @@ export default function Dashboard() {
                 axisRight={null}
                 axisBottom={{
                   tickSize: 0,
-                  tickPadding: 8,
-                  tickRotation: 0,
+                  tickPadding: 10,
+                  tickRotation: -35,
                   legendPosition: 'middle',
-                  legendOffset: 55,
+                  legendOffset: 65,
                   truncateTickAt: 0,
                 }}
                 axisLeft={{
                   tickSize: 0,
-                  tickPadding: 12,
+                  tickPadding: 8,
                   tickRotation: 0,
                   format: (value) => `₪${Number(value) / 1000}k`,
                   legendPosition: 'middle',
-                  legendOffset: -60,
+                  legendOffset: -52,
                 }}
                 enableGridY={true}
                 gridYValues={5}
