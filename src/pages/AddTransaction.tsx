@@ -43,7 +43,7 @@ export default function AddTransaction() {
   const daysWithTransactions = transactions.map((t) => new Date(t.date));
 
   const filteredCategories = categories.filter(
-    (c) => c.type === type || c.type === "both"
+    (c) => c.type === type
   );
 
   const validate = (): boolean => {

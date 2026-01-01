@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { TopNav } from "@/components/TopNav";
 import { MobileNav } from "@/components/MobileNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 interface LayoutProps {
   children: ReactNode;
@@ -22,6 +23,7 @@ export function Layout({ children }: LayoutProps) {
           <TopNav />
         </div>
         <div className="flex items-center gap-2">
+          <UserMenu />
           <ThemeToggle />
           <MobileNav />
         </div>

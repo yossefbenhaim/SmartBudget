@@ -17,6 +17,7 @@ import { ResponsiveBar } from "@nivo/bar";
 import { ResponsivePie } from "@nivo/pie";
 import { useTheme } from "next-themes";
 import { startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { HEBREW_MONTHS } from "@/constants";
 
 const COLORS = [
   "hsl(250, 84%, 54%)",
@@ -31,8 +32,6 @@ const COLORS = [
 
 const RANGE_OPTIONS = [3, 6, 12] as const;
 type ViewMode = 'year' | 'months';
-
-const hebrewMonths = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 export default function Dashboard() {
   const { transactions, categories } = useBudget();
@@ -67,7 +66,7 @@ export default function Dashboard() {
       return {
         pieStartDate: start,
         pieEndDate: end,
-        pieDisplayLabel: `${hebrewMonths[activeMonth.month]} ${activeMonth.year}`
+        pieDisplayLabel: `${HEBREW_MONTHS[activeMonth.month]} ${activeMonth.year}`
       };
     }
     

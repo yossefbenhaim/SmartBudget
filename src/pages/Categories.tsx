@@ -47,7 +47,7 @@ export default function Categories() {
   const [formData, setFormData] = useState({
     name: "",
     icon: "CircleDot",
-    type: "expense" as TransactionType | "both",
+    type: "expense" as TransactionType,
   });
 
   const resetForm = () => {
@@ -132,25 +132,21 @@ export default function Categories() {
     setDeletingId(null);
   };
 
-  const getTypeLabel = (type: TransactionType | "both") => {
+  const getTypeLabel = (type: TransactionType) => {
     switch (type) {
       case "income":
         return "הכנסות";
       case "expense":
         return "הוצאות";
-      case "both":
-        return "הכל";
     }
   };
 
-  const getTypeColor = (type: TransactionType | "both") => {
+  const getTypeColor = (type: TransactionType) => {
     switch (type) {
       case "income":
         return "bg-income-muted text-income";
       case "expense":
         return "bg-expense-muted text-expense";
-      case "both":
-        return "bg-primary/10 text-primary";
     }
   };
 
@@ -190,7 +186,7 @@ export default function Categories() {
                   onValueChange={(value) =>
                     setFormData({
                       ...formData,
-                      type: value as TransactionType | "both",
+                      type: value as TransactionType,
                     })
                   }
                 >
@@ -198,9 +194,8 @@ export default function Categories() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="income">הכנסות בלבד</SelectItem>
-                    <SelectItem value="expense">הוצאות בלבד</SelectItem>
-                    <SelectItem value="both">הכנסות והוצאות</SelectItem>
+                    <SelectItem value="income">הכנסות</SelectItem>
+                    <SelectItem value="expense">הוצאות</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -310,7 +305,7 @@ export default function Categories() {
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    type: value as TransactionType | "both",
+                    type: value as TransactionType,
                   })
                 }
               >
@@ -318,9 +313,8 @@ export default function Categories() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="income">הכנסות בלבד</SelectItem>
-                  <SelectItem value="expense">הוצאות בלבד</SelectItem>
-                  <SelectItem value="both">הכנסות והוצאות</SelectItem>
+                  <SelectItem value="income">הכנסות</SelectItem>
+                  <SelectItem value="expense">הוצאות</SelectItem>
                 </SelectContent>
               </Select>
             </div>

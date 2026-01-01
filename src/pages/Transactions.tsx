@@ -43,7 +43,7 @@ import { useBudget } from "@/context/BudgetContext";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatDate } from "@/utils/calculations";
 import { exportToCSV } from "@/utils/csvExport";
-import { Transaction, TransactionType } from "@/types/budget";
+import { Transaction, TransactionType } from "@/context/BudgetContext";
 import { parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +60,7 @@ export default function Transactions() {
   const initialYear = searchParams.get("year") ? parseInt(searchParams.get("year")!) : new Date().getFullYear();
   const initialMonth = searchParams.get("month") ? parseInt(searchParams.get("month")!) : new Date().getMonth();
   const initialType = searchParams.get("type") || "all";
-  
+
   const [year, setYear] = useState(initialYear);
   const [month, setMonth] = useState(initialMonth);
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,7 +112,7 @@ export default function Transactions() {
 
       const matchesSearch =
         searchQuery === "" ||
-        t.description.toLowerCase().includes(searchQuery.toLowerCase());
+        (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesType = typeFilter === "all" || t.type === typeFilter;
 
@@ -140,7 +140,7 @@ export default function Transactions() {
       amount: transaction.amount.toString(),
       date: transaction.date,
       categoryId: transaction.categoryId,
-      description: transaction.description,
+      description: transaction.description || "",
     });
   };
 
@@ -186,7 +186,7 @@ export default function Transactions() {
   };
 
   const filteredCategoriesForEdit = categories.filter(
-    (c) => c.type === editForm.type || c.type === "both"
+    (c) => c.type === editForm.type
   );
 
   return (
@@ -271,12 +271,12 @@ export default function Transactions() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>תאריך</TableHead>
-                <TableHead>סוג</TableHead>
-                <TableHead>קטגוריה</TableHead>
-                <TableHead>תיאור</TableHead>
-                <TableHead>סכום</TableHead>
-                <TableHead className="w-[100px]">פעולות</TableHead>
+                <TableHead className="text-right">תאריך</TableHead>
+                <TableHead className="text-right">סוג</TableHead>
+                <TableHead className="text-right">קטגוריה</TableHead>
+                <TableHead className="text-right">תיאור</TableHead>
+                <TableHead className="text-right">סכום</TableHead>
+                <TableHead className="w-[100px] text-left">פעולות</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -295,36 +295,39 @@ export default function Transactions() {
                       ref={transaction.id === highlightId ? highlightRef : null}
                       className={cn(
                         transaction.id === highlightId &&
-                          "bg-primary/10 animate-pulse"
+                        "bg-primary/10 animate-pulse"
                       )}
                     >
-                      <TableCell>{formatDate(transaction.date)}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-right border-l">
+                        {formatDate(transaction.date)}
+                      </TableCell>
+                      <TableCell className="text-right border-l">
                         <Badge
-                          variant="secondary"
+                          variant="outline"
                           className={cn(
+                            "w-fit",
                             transaction.type === "income"
-                              ? "bg-income-muted text-income"
-                              : "bg-expense-muted text-expense"
+                              ? "bg-income-muted text-income border-income"
+                              : "bg-expense-muted text-expense border-expense"
                           )}
                         >
                           {transaction.type === "income" ? "הכנסה" : "הוצאה"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                      <TableCell className="text-right border-l">
+                        <div className="flex items-center gap-2 flex-row-reverse justify-end">
                           <CategoryIcon
                             iconName={getCategoryIcon(transaction.categoryId)}
                           />
-                          {getCategoryName(transaction.categoryId)}
+                          <span>{getCategoryName(transaction.categoryId)}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate">
+                      <TableCell className="text-right border-l max-w-[200px] truncate">
                         {transaction.description || "-"}
                       </TableCell>
                       <TableCell
                         className={cn(
-                          "font-semibold",
+                          "text-right border-l font-semibold",
                           transaction.type === "income"
                             ? "text-income"
                             : "text-expense"
@@ -333,7 +336,7 @@ export default function Transactions() {
                         {transaction.type === "income" ? "+" : "-"}
                         {formatCurrency(transaction.amount)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-left">
                         <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
@@ -380,7 +383,7 @@ export default function Transactions() {
                   }
                   className={cn(
                     editForm.type === "income" &&
-                      "bg-income text-income-foreground border-income"
+                    "bg-income text-income-foreground border-income"
                   )}
                 >
                   הכנסה
@@ -393,7 +396,7 @@ export default function Transactions() {
                   }
                   className={cn(
                     editForm.type === "expense" &&
-                      "bg-expense text-expense-foreground border-expense"
+                    "bg-expense text-expense-foreground border-expense"
                   )}
                 >
                   הוצאה

@@ -1,150 +1,142 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from "react";
-import { Transaction, Category } from "@/types/budget";
-import {
-  getTransactions,
-  saveTransactions,
-  getCategories,
-  saveCategories,
-  generateId,
-  resetAllData,
-} from "@/utils/localStorage";
+import React, { createContext, useContext, ReactNode } from "react";
+import { useTransactions, useCreateTransaction, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/hooks/useCategories";
+import { Transaction as DBTransaction, Category as DBCategory, TransactionType as DBTransactionType } from "@/types/database";
 
-interface BudgetState {
-  transactions: Transaction[];
-  categories: Category[];
+// Re-export TransactionType for backward compatibility
+export type TransactionType = DBTransactionType;
+
+// Legacy types for backward compatibility
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  categoryId: string;
+  date: string;
+  description?: string;
+  notes?: string;
 }
 
-type BudgetAction =
-  | { type: "SET_TRANSACTIONS"; payload: Transaction[] }
-  | { type: "ADD_TRANSACTION"; payload: Transaction }
-  | { type: "UPDATE_TRANSACTION"; payload: Transaction }
-  | { type: "DELETE_TRANSACTION"; payload: string }
-  | { type: "SET_CATEGORIES"; payload: Category[] }
-  | { type: "ADD_CATEGORY"; payload: Category }
-  | { type: "UPDATE_CATEGORY"; payload: Category }
-  | { type: "DELETE_CATEGORY"; payload: string }
-  | { type: "RESET_ALL" };
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  type: TransactionType;
+}
 
-interface BudgetContextType extends BudgetState {
+interface BudgetContextType {
+  transactions: Transaction[];
+  categories: Category[];
   addTransaction: (transaction: Omit<Transaction, "id">) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
   addCategory: (category: Omit<Category, "id">) => void;
   updateCategory: (category: Category) => void;
   deleteCategory: (id: string) => void;
-  resetAll: () => void;
+  isLoading: boolean;
 }
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
-const budgetReducer = (state: BudgetState, action: BudgetAction): BudgetState => {
-  switch (action.type) {
-    case "SET_TRANSACTIONS":
-      return { ...state, transactions: action.payload };
-    case "ADD_TRANSACTION":
-      return { ...state, transactions: [...state.transactions, action.payload] };
-    case "UPDATE_TRANSACTION":
-      return {
-        ...state,
-        transactions: state.transactions.map((t) =>
-          t.id === action.payload.id ? action.payload : t
-        ),
-      };
-    case "DELETE_TRANSACTION":
-      return {
-        ...state,
-        transactions: state.transactions.filter((t) => t.id !== action.payload),
-      };
-    case "SET_CATEGORIES":
-      return { ...state, categories: action.payload };
-    case "ADD_CATEGORY":
-      return { ...state, categories: [...state.categories, action.payload] };
-    case "UPDATE_CATEGORY":
-      return {
-        ...state,
-        categories: state.categories.map((c) =>
-          c.id === action.payload.id ? action.payload : c
-        ),
-      };
-    case "DELETE_CATEGORY":
-      return {
-        ...state,
-        categories: state.categories.filter((c) => c.id !== action.payload),
-      };
-    case "RESET_ALL":
-      resetAllData();
-      return { transactions: [], categories: getCategories() };
-    default:
-      return state;
-  }
-};
+// Helper: Convert DB transaction to legacy format
+const dbToLegacyTransaction = (dbTx: DBTransaction & { category?: DBCategory | null }): Transaction => ({
+  id: dbTx.id,
+  type: dbTx.type,
+  amount: Number(dbTx.amount),
+  categoryId: dbTx.category_id || '',
+  date: dbTx.transaction_date,
+  description: dbTx.description || undefined,
+  notes: dbTx.notes || undefined,
+});
+
+// Helper: Convert DB category to legacy format
+const dbToLegacyCategory = (dbCat: DBCategory): Category => ({
+  id: dbCat.id,
+  name: dbCat.name,
+  icon: dbCat.icon || '📦',
+  type: dbCat.type,
+});
 
 export const BudgetProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(budgetReducer, {
-    transactions: [],
-    categories: [],
-  });
+  // Fetch data from Supabase
+  const { data: dbTransactions = [], isLoading: transactionsLoading } = useTransactions();
+  const { data: dbCategories = [], isLoading: categoriesLoading } = useCategories();
 
-  useEffect(() => {
-    dispatch({ type: "SET_TRANSACTIONS", payload: getTransactions() });
-    dispatch({ type: "SET_CATEGORIES", payload: getCategories() });
-  }, []);
+  // Mutations
+  const createTransaction = useCreateTransaction();
+  const updateTransactionMutation = useUpdateTransaction();
+  const deleteTransactionMutation = useDeleteTransaction();
+  const createCategory = useCreateCategory();
+  const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
 
-  useEffect(() => {
-    if (state.transactions.length > 0 || getTransactions().length > 0) {
-      saveTransactions(state.transactions);
-    }
-  }, [state.transactions]);
-
-  useEffect(() => {
-    if (state.categories.length > 0) {
-      saveCategories(state.categories);
-    }
-  }, [state.categories]);
+  // Convert to legacy format for backward compatibility
+  const transactions: Transaction[] = dbTransactions.map(dbToLegacyTransaction);
+  const categories: Category[] = dbCategories.map(dbToLegacyCategory);
 
   const addTransaction = (transaction: Omit<Transaction, "id">) => {
-    const newTransaction = { ...transaction, id: generateId() };
-    dispatch({ type: "ADD_TRANSACTION", payload: newTransaction });
+    createTransaction.mutate({
+      amount: transaction.amount,
+      type: transaction.type,
+      description: transaction.description || null,
+      notes: transaction.notes || null,
+      transaction_date: transaction.date,
+      category_id: transaction.categoryId || null,
+    });
   };
 
   const updateTransaction = (transaction: Transaction) => {
-    dispatch({ type: "UPDATE_TRANSACTION", payload: transaction });
+    updateTransactionMutation.mutate({
+      id: transaction.id,
+      amount: transaction.amount,
+      type: transaction.type,
+      description: transaction.description || null,
+      notes: transaction.notes || null,
+      transaction_date: transaction.date,
+      category_id: transaction.categoryId || null,
+    });
   };
 
   const deleteTransaction = (id: string) => {
-    dispatch({ type: "DELETE_TRANSACTION", payload: id });
+    deleteTransactionMutation.mutate(id);
   };
 
   const addCategory = (category: Omit<Category, "id">) => {
-    const newCategory = { ...category, id: generateId() };
-    dispatch({ type: "ADD_CATEGORY", payload: newCategory });
+    createCategory.mutate({
+      name: category.name,
+      type: category.type,
+      icon: category.icon,
+      color: '#6366f1', // Default color
+      is_active: true,
+    });
   };
 
   const updateCategory = (category: Category) => {
-    dispatch({ type: "UPDATE_CATEGORY", payload: category });
+    updateCategoryMutation.mutate({
+      id: category.id,
+      name: category.name,
+      icon: category.icon,
+    });
   };
 
   const deleteCategory = (id: string) => {
-    dispatch({ type: "DELETE_CATEGORY", payload: id });
+    deleteCategoryMutation.mutate(id);
   };
 
-  const resetAll = () => {
-    dispatch({ type: "RESET_ALL" });
+  const value: BudgetContextType = {
+    transactions,
+    categories,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    isLoading: transactionsLoading || categoriesLoading,
   };
 
   return (
-    <BudgetContext.Provider
-      value={{
-        ...state,
-        addTransaction,
-        updateTransaction,
-        deleteTransaction,
-        addCategory,
-        updateCategory,
-        deleteCategory,
-        resetAll,
-      }}
-    >
+    <BudgetContext.Provider value={value}>
       {children}
     </BudgetContext.Provider>
   );
