@@ -11,6 +11,8 @@ interface AuthContextType {
   signOut: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
+  getOnboardingStatus: () => Promise<boolean>;
+  completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -75,6 +77,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const getOnboardingStatus = async (): Promise<boolean> => {
+    if (!user) return true; // If no user, assume onboarding completed
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('onboarding_completed')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !data) return true; // On error, don't show onboarding
+    return (data as Record<string, boolean>).onboarding_completed ?? false;
+  };
+
+  const completeOnboarding = async (): Promise<void> => {
+    if (!user) return;
+
+    await supabase
+      .from('profiles')
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - onboarding_completed column exists but not in generated types yet
+      .update({ onboarding_completed: true })
+      .eq('id', user.id);
+  };
+
   const value = {
     user,
     session,
@@ -84,6 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     resetPassword,
     updatePassword,
+    getOnboardingStatus,
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

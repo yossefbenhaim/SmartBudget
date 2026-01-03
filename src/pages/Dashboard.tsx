@@ -18,6 +18,8 @@ import { ResponsivePie } from "@nivo/pie";
 import { useTheme } from "next-themes";
 import { startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { HEBREW_MONTHS } from "@/constants";
+import OnboardingTour from "@/components/OnboardingTour";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 const COLORS = [
   "hsl(250, 84%, 54%)",
@@ -36,6 +38,7 @@ type ViewMode = 'year' | 'months';
 export default function Dashboard() {
   const { transactions, categories } = useBudget();
   const { resolvedTheme } = useTheme();
+  const { runTour, handleTourComplete } = useOnboarding();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth());
   const [mounted, setMounted] = useState(false);
@@ -112,6 +115,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <OnboardingTour run={runTour} onFinish={handleTourComplete} />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">עמוד הבית</h1>
@@ -128,30 +133,36 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <StatCard
-          title="סה״כ הכנסות"
-          amount={stats.totalIncome}
-          icon={TrendingUp}
-          variant="income"
-          year={year}
-          month={month}
-        />
-        <StatCard
-          title="סה״כ הוצאות"
-          amount={stats.totalExpenses}
-          icon={TrendingDown}
-          variant="expense"
-          year={year}
-          month={month}
-        />
-        <StatCard
-          title="יתרה"
-          amount={stats.balance}
-          icon={Wallet}
-          variant="balance"
-          year={year}
-          month={month}
-        />
+        <div data-tour="balance-card">
+          <StatCard
+            title="יתרה"
+            amount={stats.balance}
+            icon={Wallet}
+            variant="balance"
+            year={year}
+            month={month}
+          />
+        </div>
+        <div data-tour="income-card">
+          <StatCard
+            title="סה״כ הכנסות"
+            amount={stats.totalIncome}
+            icon={TrendingUp}
+            variant="income"
+            year={year}
+            month={month}
+          />
+        </div>
+        <div data-tour="expenses-card">
+          <StatCard
+            title="סה״כ הוצאות"
+            amount={stats.totalExpenses}
+            icon={TrendingDown}
+            variant="expense"
+            year={year}
+            month={month}
+          />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -228,7 +239,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden" data-tour="chart-section">
           <CardHeader className="pb-2">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
