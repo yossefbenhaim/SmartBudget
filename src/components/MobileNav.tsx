@@ -1,21 +1,8 @@
-import { Menu, X, LayoutDashboard, Plus, List, Tags, RotateCcw, Wallet } from "lucide-react";
+import { Menu, LayoutDashboard, Plus, List, Tags, Wallet } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useBudget } from "@/context/BudgetContext";
 import { useMobileMenu } from "@/contexts/MobileMenuContext";
-import { cn } from "@/lib/utils";
 
 const navItems = [
   { title: "עמוד הבית", url: "/", icon: LayoutDashboard, dataTour: undefined },
@@ -27,7 +14,6 @@ const navItems = [
 
 export function MobileNav() {
   const { isOpen, setOpen, isTourActive } = useMobileMenu();
-  const { resetAll } = useBudget();
 
   return (
     <Sheet open={isOpen} onOpenChange={setOpen}>
@@ -36,8 +22,8 @@ export function MobileNav() {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent 
-        side="right" 
+      <SheetContent
+        side="right"
         isTourActive={isTourActive}
         className="w-72 p-0"
       >
@@ -46,7 +32,7 @@ export function MobileNav() {
             <h2 className="text-lg font-bold text-primary">Family Budget</h2>
             <p className="text-xs text-muted-foreground">ניהול תקציב משפחתי</p>
           </div>
-          
+
           <nav className="flex-1 p-4 space-y-2">
             {navItems.map((item) => (
               <div key={item.url} data-tour={item.dataTour}>
@@ -63,37 +49,6 @@ export function MobileNav() {
               </div>
             ))}
           </nav>
-
-          <div className="p-4 border-t">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" className="w-full gap-2 text-destructive hover:text-destructive">
-                  <RotateCcw className="h-4 w-4" />
-                  איפוס נתונים
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    פעולה זו תמחק את כל הנתונים ותחזיר את האפליקציה למצב התחלתי. לא ניתן לבטל פעולה זו.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>ביטול</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      resetAll();
-                      setOpen(false);
-                    }}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    אפס הכל
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
         </div>
       </SheetContent>
     </Sheet>

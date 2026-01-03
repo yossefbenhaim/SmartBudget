@@ -202,38 +202,245 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: ProfileInsert;
-        Update: ProfileUpdate;
+        Insert: {
+          id: string;
+          email?: string | null;
+          full_name?: string | null;
+          avatar_url?: string | null;
+          currency?: string;
+          onboarding_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          full_name?: string | null;
+          avatar_url?: string | null;
+          currency?: string;
+          onboarding_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       categories: {
         Row: Category;
-        Insert: CategoryInsert;
-        Update: CategoryUpdate;
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          type: TransactionType;
+          color: string;
+          icon?: string | null;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          type?: TransactionType;
+          color?: string;
+          icon?: string | null;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       transactions: {
         Row: Transaction;
-        Insert: TransactionInsert;
-        Update: TransactionUpdate;
+        Insert: {
+          id?: string;
+          user_id: string;
+          category_id?: string | null;
+          amount: number;
+          type: TransactionType;
+          description?: string | null;
+          notes?: string | null;
+          transaction_date: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          category_id?: string | null;
+          amount?: number;
+          type?: TransactionType;
+          description?: string | null;
+          notes?: string | null;
+          transaction_date?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       budgets: {
         Row: Budget;
-        Insert: BudgetInsert;
-        Update: BudgetUpdate;
+        Insert: {
+          id?: string;
+          user_id: string;
+          category_id?: string | null;
+          amount: number;
+          period: BudgetPeriod;
+          start_date: string;
+          end_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          category_id?: string | null;
+          amount?: number;
+          period?: BudgetPeriod;
+          start_date?: string;
+          end_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       investments: {
         Row: Investment;
-        Insert: InvestmentInsert;
-        Update: InvestmentUpdate;
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          type: InvestmentType;
+          initial_amount: number;
+          current_value: number;
+          currency?: string;
+          purchase_date: string;
+          notes?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          type?: InvestmentType;
+          initial_amount?: number;
+          current_value?: number;
+          currency?: string;
+          purchase_date?: string;
+          notes?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       savings_goals: {
         Row: SavingsGoal;
-        Insert: SavingsGoalInsert;
-        Update: SavingsGoalUpdate;
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          target_amount: number;
+          current_amount?: number;
+          deadline?: string | null;
+          description?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          target_amount?: number;
+          current_amount?: number;
+          deadline?: string | null;
+          description?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       recurring_transactions: {
         Row: RecurringTransaction;
-        Insert: RecurringTransactionInsert;
-        Update: RecurringTransactionUpdate;
+        Insert: {
+          id?: string;
+          user_id: string;
+          category_id?: string | null;
+          amount: number;
+          type: TransactionType;
+          description: string;
+          frequency: RecurringFrequency;
+          start_date: string;
+          end_date?: string | null;
+          last_processed_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          category_id?: string | null;
+          amount?: number;
+          type?: TransactionType;
+          description?: string;
+          frequency?: RecurringFrequency;
+          start_date?: string;
+          end_date?: string | null;
+          last_processed_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      investment_recommendations: {
+        Row: InvestmentRecommendation;
+        Insert: {
+          id?: string;
+          name: string;
+          provider: string;
+          icon?: string;
+          risk_level?: string;
+          risk_color?: string;
+          expected_return?: string;
+          min_investment?: number;
+          description?: string;
+          benefits?: string[];
+          color?: string;
+          link_url?: string | null;
+          display_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          provider?: string;
+          icon?: string;
+          risk_level?: string;
+          risk_color?: string;
+          expected_return?: string;
+          min_investment?: number;
+          description?: string;
+          benefits?: string[];
+          color?: string;
+          link_url?: string | null;
+          display_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
     };
     Views: {
@@ -244,5 +451,7 @@ export interface Database {
         Row: CategorySummary;
       };
     };
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
   };
 }
