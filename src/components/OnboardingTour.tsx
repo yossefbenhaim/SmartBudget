@@ -30,16 +30,16 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
           const divEl = div as HTMLElement;
           const style = divEl.style;
           const computed = getComputedStyle(divEl);
-          
+
           // Check if it matches the tour overlay: position absolute, z-index 999998 or 30, rgba background, mix-blend-mode hard-light
           const hasMixBlend = computed.mixBlendMode === 'hard-light' || style.mixBlendMode === 'hard-light';
           const hasRgbaBg = (style.backgroundColor || computed.backgroundColor).includes('rgba');
-          const hasZIndex = computed.zIndex === '999998' || computed.zIndex === '30' || 
-                           style.zIndex === '999998' || style.zIndex === '30' ||
-                           style.cssText.includes('z-index: 999998') || style.cssText.includes('z-index: 30');
+          const hasZIndex = computed.zIndex === '999998' || computed.zIndex === '30' ||
+            style.zIndex === '999998' || style.zIndex === '30' ||
+            style.cssText.includes('z-index: 999998') || style.cssText.includes('z-index: 30');
           const isAbsolute = computed.position === 'absolute' || style.position === 'absolute';
           const hasInset = style.cssText.includes('inset: 0px') || computed.inset === '0px';
-          
+
           // If it matches the tour overlay pattern
           if (isAbsolute && hasZIndex && (hasRgbaBg || hasMixBlend || hasInset)) {
             divEl.style.setProperty('z-index', '30', 'important');
@@ -56,7 +56,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
         rafId = requestAnimationFrame(scheduleFix);
       };
       rafId = requestAnimationFrame(scheduleFix);
-      
+
       return () => {
         cancelAnimationFrame(rafId);
       };
@@ -70,7 +70,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
         // Adjust mobile menu overlay and content
         const menuOverlay = document.querySelector('[data-radix-dialog-overlay]');
         const menuContent = document.querySelector('[data-radix-dialog-content]');
-        
+
         if (menuOverlay) {
           const overlayEl = menuOverlay as HTMLElement;
           overlayEl.style.setProperty('z-index', '40', 'important');
@@ -87,8 +87,8 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
         tourOverlays.forEach((overlay) => {
           const overlayEl = overlay as HTMLElement;
           // Check if it's the tour overlay (has mix-blend-mode: hard-light)
-          if (overlayEl.style.mixBlendMode === 'hard-light' || 
-              getComputedStyle(overlayEl).mixBlendMode === 'hard-light') {
+          if (overlayEl.style.mixBlendMode === 'hard-light' ||
+            getComputedStyle(overlayEl).mixBlendMode === 'hard-light') {
             overlayEl.style.setProperty('z-index', '30', 'important');
             overlayEl.style.setProperty('pointer-events', 'none', 'important');
           }
@@ -115,7 +115,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       const observer = new MutationObserver(() => {
         adjustMenuStyles();
       });
-      
+
       observer.observe(document.body, {
         childList: true,
         subtree: true,
@@ -132,7 +132,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
         // Restore styles
         const menuOverlay = document.querySelector('[data-radix-dialog-overlay]');
         const menuContent = document.querySelector('[data-radix-dialog-content]');
-        
+
         if (menuOverlay) {
           (menuOverlay as HTMLElement).style.removeProperty('z-index');
           (menuOverlay as HTMLElement).style.removeProperty('pointer-events');
@@ -323,9 +323,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
           ) : (
             <>
               <h3 className="text-xl font-bold mb-2">קטגוריות 🏷️</h3>
-              <p className="text-base">
-                נהל את הקטגוריות שלך - תוכל ליצור קטגוריות חדשות, לערוך קיימות,
-                ולראות כמה הוצאת בכל קטגוריה.
+              <p className="text-base">נהל את הקטגוריות שלך בקלות – צור וערוך קטגוריות, וצפה בסיכום ההוצאות בכל קטגוריה באמצעות נתונים וגרפים ברורים, שיעזרו לך להבין לאן הכסף שלך הולך.
               </p>
             </>
           )}
