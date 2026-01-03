@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { BudgetProvider } from "@/context/BudgetContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { MobileMenuProvider } from "@/contexts/MobileMenuContext";
 import { Layout } from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import AddTransaction from "@/pages/AddTransaction";
@@ -29,9 +30,10 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <BudgetProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+            <MobileMenuProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -101,6 +103,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
+            </MobileMenuProvider>
           </BudgetProvider>
         </AuthProvider>
       </TooltipProvider>

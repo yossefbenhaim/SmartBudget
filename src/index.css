@@ -149,3 +149,47 @@
     @apply bg-gradient-to-br from-primary to-violet-400;
   }
 }
+
+/* Ensure onboarding tour is always on top */
+[data-radix-dialog-overlay][style*="z-index: 40"] {
+  pointer-events: none !important;
+}
+
+[data-radix-dialog-content][style*="z-index: 40"] {
+  pointer-events: auto !important;
+}
+
+/* Joyride tour z-index override */
+.__floater__ {
+  z-index: 1000000 !important;
+  pointer-events: auto !important;
+}
+
+.__floater__.__open {
+  z-index: 1000000 !important;
+  pointer-events: auto !important;
+}
+
+.react-joyride__tooltip {
+  z-index: 1000001 !important;
+  pointer-events: auto !important;
+}
+
+/* Fix tour overlay - make it not block interactions */
+div[style*="position: absolute"][style*="z-index: 999998"],
+div[style*="position: absolute"][style*="z-index: 30"] {
+  pointer-events: none !important;
+}
+
+/* But allow tooltip and buttons to be clickable */
+.__floater__,
+.react-joyride__tooltip,
+.react-joyride__tooltip *,
+[class*="react-joyride"] button {
+  pointer-events: auto !important;
+}
+
+.react-joyride__spotlight {
+  z-index: 999999 !important;
+  pointer-events: none !important;
+}
