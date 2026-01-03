@@ -52,8 +52,8 @@ export default function Dashboard() {
   const labelColor = mounted && resolvedTheme === "dark" ? "#ffffff" : "#000000";
 
   const stats = getMonthlyStats(transactions, year, month);
-  
-  const monthlyComparison = viewMode === 'year' 
+
+  const monthlyComparison = viewMode === 'year'
     ? getYearlyComparison(transactions, barChartYear)
     : getMonthlyComparison(transactions, chartRange, 0);
 
@@ -69,7 +69,7 @@ export default function Dashboard() {
         pieDisplayLabel: `${HEBREW_MONTHS[activeMonth.month]} ${activeMonth.year}`
       };
     }
-    
+
     if (viewMode === 'year') {
       const start = new Date(barChartYear, 0, 1);
       const end = new Date(barChartYear, 11, 31);
@@ -190,8 +190,8 @@ export default function Dashboard() {
                   tooltip={({ datum }) => (
                     <div className="bg-popover border border-border rounded-xl shadow-xl p-4 min-w-[160px]">
                       <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
+                        <div
+                          className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: datum.color }}
                         />
                         <span className="font-bold text-foreground">{datum.label}</span>
@@ -303,13 +303,13 @@ export default function Dashboard() {
               />
             </div>
           </CardHeader>
-          <CardContent className="p-3 pt-0 sm:p-6">
-            <div className="h-[350px] sm:h-[320px]">
+          <CardContent className="p-2 pt-0 sm:p-6">
+            <div className="h-[350px] w-full sm:h-[320px]">
               <ResponsiveBar
                 data={monthlyComparison}
                 keys={['income', 'expenses']}
                 indexBy="monthName"
-                margin={{ top: 30, right: 10, bottom: 80, left: 60 }}
+                margin={{ top: 30, right: 10, bottom: 30, left: 30 }}
                 padding={0.35}
                 groupMode="grouped"
                 valueScale={{ type: 'linear' }}
@@ -351,7 +351,7 @@ export default function Dashboard() {
                 }}
                 axisLeft={{
                   tickSize: 0,
-                  tickPadding: 8,
+                  tickPadding: 22,
                   tickRotation: 0,
                   format: (value) => `₪${Number(value) / 1000}k`,
                   legendPosition: 'middle',
@@ -374,7 +374,6 @@ export default function Dashboard() {
                   const monthIndex = shortMonths.indexOf(data.data.monthName as string);
                   if (monthIndex !== -1) {
                     const clickedMonth = { year: data.data.year as number, month: monthIndex };
-                    // Toggle: if same month is clicked again, unlock it
                     if (lockedMonth && lockedMonth.year === clickedMonth.year && lockedMonth.month === clickedMonth.month) {
                       setLockedMonth(null);
                     } else {
