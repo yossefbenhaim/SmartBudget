@@ -1,20 +1,8 @@
 import { useState } from "react";
-import { Menu, X, LayoutDashboard, Plus, List, Tags, RotateCcw, Wallet } from "lucide-react";
+import { Menu, LayoutDashboard, Plus, List, Tags, Wallet } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useBudget } from "@/context/BudgetContext";
 
 const navItems = [
   { title: "עמוד הבית", url: "/", icon: LayoutDashboard },
@@ -26,7 +14,6 @@ const navItems = [
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
-  const { resetAll } = useBudget();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -57,37 +44,6 @@ export function MobileNav() {
               </NavLink>
             ))}
           </nav>
-
-          <div className="p-4 border-t">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" className="w-full gap-2 text-destructive hover:text-destructive">
-                  <RotateCcw className="h-4 w-4" />
-                  איפוס נתונים
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    פעולה זו תמחק את כל הנתונים ותחזיר את האפליקציה למצב התחלתי. לא ניתן לבטל פעולה זו.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>ביטול</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      resetAll();
-                      setOpen(false);
-                    }}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    אפס הכל
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
         </div>
       </SheetContent>
     </Sheet>

@@ -107,6 +107,7 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
       type: category.type,
       icon: category.icon,
       color: '#6366f1', // Default color
+      description: null,
       is_active: true,
     });
   };

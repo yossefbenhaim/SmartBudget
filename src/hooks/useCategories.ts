@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Category, CategoryInsert, CategoryUpdate, TransactionType } from '@/types/database';
+import { Category, TransactionType } from '@/types/database';
 import { toast } from 'sonner';
 
 // ============================================================================
@@ -79,12 +79,22 @@ export function useCreateCategory() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (category: Omit<CategoryInsert, 'user_id'>) => {
+    mutationFn: async (category: {
+      name: string;
+      type: TransactionType;
+      color: string;
+      icon?: string | null;
+      description?: string | null;
+      is_active?: boolean;
+    }) => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('categories')
-        .insert({ ...category, user_id: user.id })
+        .insert({
+          ...category,
+          user_id: user.id,
+        } as never)
         .select()
         .single();
 
@@ -111,12 +121,20 @@ export function useUpdateCategory() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: CategoryUpdate & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: { 
+      id: string; 
+      name?: string;
+      type?: TransactionType;
+      color?: string;
+      icon?: string | null;
+      description?: string | null;
+      is_active?: boolean;
+    }) => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('categories')
-        .update(updates)
+        .update(updates as never)
         .eq('id', id)
         .eq('user_id', user.id)
         .select()
