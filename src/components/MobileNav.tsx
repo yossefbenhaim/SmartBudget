@@ -15,8 +15,16 @@ const navItems = [
 export function MobileNav() {
   const { isOpen, setOpen, isTourActive } = useMobileMenu();
 
+  const handleOpenChange = (open: boolean) => {
+    // Don't close the menu if the tour is active
+    if (!open && isTourActive) {
+      return;
+    }
+    setOpen(open);
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={setOpen}>
+    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden" data-tour="mobile-menu-button">
           <Menu className="h-5 w-5" />

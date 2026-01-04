@@ -10,6 +10,7 @@ interface OnboardingTourProps {
 export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [waitingForMenu, setWaitingForMenu] = useState(false);
   const { isOpen: menuIsOpen, openMenu, closeMenu, setTourActive } = useMobileMenu();
 
   // Update tour active state
@@ -155,31 +156,15 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Open mobile menu automatically before steps that need it (steps 5-8, indices 5-8)
+  // Close mobile menu only after step 8 (when moving to step 9 - the final step)
   useEffect(() => {
     if (run && isMobile) {
-      // Open menu before step 5 (at the end of step 4, index 4)
-      if (stepIndex === 4) {
-        // Open menu with a small delay to ensure smooth transition
-        setTimeout(() => {
-          if (!menuIsOpen) {
-            openMenu();
-          }
-        }, 500);
-      }
-      // Keep menu open during steps 5-8 (indices 5-8)
-      else if (stepIndex >= 5 && stepIndex <= 8) {
-        // Ensure menu stays open - check periodically in case user closes it
-        if (!menuIsOpen) {
-          openMenu();
-        }
-      }
-      // Close menu after step 8 (index 9) or when tour finishes
-      else if (stepIndex > 8 && menuIsOpen) {
+      // Close menu only after step 8 (stepIndex 9 is the final "body" step)
+      if (stepIndex === 9 && menuIsOpen) {
         closeMenu();
       }
     }
-  }, [run, isMobile, stepIndex, menuIsOpen, openMenu, closeMenu]);
+  }, [run, isMobile, stepIndex, menuIsOpen, closeMenu]);
 
   const steps: Step[] = useMemo(() => [
     {
@@ -283,7 +268,8 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
           )}
         </div>
       ),
-      placement: isMobile ? "left" : "bottom",
+      placement: isMobile ? "right" : "bottom",
+      disableBeacon: true,
     },
     {
       target: isMobile ? '[data-tour="add-transaction-mobile"]' : '[data-tour="transactions"]',
@@ -307,7 +293,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
           )}
         </div>
       ),
-      placement: isMobile ? "left" : "bottom",
+      placement: isMobile ? "right" : "bottom",
     },
     {
       target: isMobile ? '[data-tour="transactions-mobile"]' : '[data-tour="categories"]',
@@ -329,7 +315,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
           )}
         </div>
       ),
-      placement: isMobile ? "left" : "bottom",
+      placement: isMobile ? "right" : "bottom",
     },
     {
       target: isMobile ? '[data-tour="categories-mobile"]' : '[data-tour="balance"]',
@@ -353,7 +339,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
           )}
         </div>
       ),
-      placement: isMobile ? "left" : "bottom",
+      placement: isMobile ? "right" : "bottom",
     },
     {
       target: "body",
@@ -391,24 +377,42 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
     // Handle step changes
     if (type === "step:after") {
       if (action === ACTIONS.NEXT) {
-        setStepIndex(index + 1);
+        // For mobile: open menu and WAIT before moving from step 4 to step 5
+        if (isMobile && index === 4) {
+          setWaitingForMenu(true);
+          openMenu();
+          // Wait for menu to open before proceeding
+          setTimeout(() => {
+            setStepIndex(index + 1);
+            setWaitingForMenu(false);
+          }, 500);
+        } else {
+          setStepIndex(index + 1);
+        }
       } else if (action === ACTIONS.PREV) {
-        setStepIndex(index - 1);
+        // For mobile: open menu when going back from step 9 to step 8
+        if (isMobile && index === 9) {
+          setWaitingForMenu(true);
+          openMenu();
+          setTimeout(() => {
+            setStepIndex(index - 1);
+            setWaitingForMenu(false);
+          }, 500);
+        } else {
+          setStepIndex(index - 1);
+        }
       }
     }
 
-    // For mobile: ensure menu is open and elements are visible before targeting them
+    // For mobile: scroll to element when showing steps in menu
     if (isMobile && type === "step:before" && index >= 5 && index <= 8) {
-      // Ensure menu is open before showing step
-      openMenu();
-      // Wait a bit for menu animation to complete
+      // Wait a bit for menu to open, then scroll
       setTimeout(() => {
         const target = document.querySelector(steps[index].target as string);
         if (target) {
-          // Scroll element into view if needed
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 300);
+      }, 400);
     }
 
     // Debug: check if mobile menu items exist
@@ -424,7 +428,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
   return (
     <Joyride
       steps={steps}
-      run={run}
+      run={run && !waitingForMenu}
       continuous
       showProgress
       showSkipButton
@@ -433,6 +437,7 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       disableScrolling={false}
       disableOverlayClose={true}
       scrollToFirstStep={true}
+      scrollDuration={isMobile && stepIndex === 5 ? 800 : 300}
       styles={{
         options: {
           primaryColor: "#2563eb",
@@ -487,7 +492,9 @@ export default function OnboardingTour({ run, onFinish }: OnboardingTourProps) {
       }}
       floaterProps={{
         disableAnimation: false,
+        offset: isMobile ? 15 : 10,
       }}
+      spotlightPadding={isMobile ? 5 : 10}
     />
   );
 }
