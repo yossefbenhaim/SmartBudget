@@ -1,225 +1,127 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
-import { Transaction, TransactionWithCategory, TransactionType } from '@/types/database';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+import { Transaction, TransactionWithCategory } from '@/types/database'
+import { toast } from 'sonner'
 
-// ============================================================================
-// QUERY KEYS
-// ============================================================================
 export const transactionKeys = {
   all: ['transactions'] as const,
   lists: () => [...transactionKeys.all, 'list'] as const,
   list: (filters: string) => [...transactionKeys.lists(), { filters }] as const,
   details: () => [...transactionKeys.all, 'detail'] as const,
   detail: (id: string) => [...transactionKeys.details(), id] as const,
-};
+}
 
-// ============================================================================
-// FETCH TRANSACTIONS
-// ============================================================================
+// ─── Fetch all transactions ────────────────────────────────────────────────────
 export function useTransactions(startDate?: string, endDate?: string) {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   return useQuery({
     queryKey: transactionKeys.list(`${startDate}-${endDate}`),
     queryFn: async () => {
-      if (!user) throw new Error('User not authenticated');
+      const params = new URLSearchParams()
+      if (startDate) params.set('from', startDate)
+      if (endDate)   params.set('to', endDate)
+      params.set('limit', '200')
 
-      let query = supabase
-        .from('transactions')
-        .select(`
-          *,
-          category:categories(*)
-        `)
-        .eq('user_id', user.id)
-        .order('transaction_date', { ascending: false });
-
-      if (startDate) {
-        query = query.gte('transaction_date', startDate);
-      }
-      if (endDate) {
-        query = query.lte('transaction_date', endDate);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return data as TransactionWithCategory[];
+      const qs = params.toString()
+      return api.get<TransactionWithCategory[]>(`/api/transactions${qs ? `?${qs}` : ''}`)
     },
     enabled: !!user,
-  });
+  })
 }
 
-// ============================================================================
-// GET SINGLE TRANSACTION
-// ============================================================================
+// ─── Fetch single transaction ─────────────────────────────────────────────────
 export function useTransaction(id: string) {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   return useQuery({
     queryKey: transactionKeys.detail(id),
-    queryFn: async () => {
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('transactions')
-        .select(`
-          *,
-          category:categories(*)
-        `)
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) throw error;
-      return data as TransactionWithCategory;
-    },
+    queryFn: () => api.get<TransactionWithCategory>(`/api/transactions/${id}`),
     enabled: !!user && !!id,
-  });
+  })
 }
 
-// ============================================================================
-// CREATE TRANSACTION
-// ============================================================================
+// ─── Create ───────────────────────────────────────────────────────────────────
 export function useCreateTransaction() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   return useMutation({
-    mutationFn: async (transaction: {
-      amount: number;
-      type: TransactionType;
-      transaction_date: string;
-      category_id?: string | null;
-      description?: string | null;
-      notes?: string | null;
-    }) => {
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('transactions')
-        .insert({
-          ...transaction,
-          user_id: user.id,
-        } as never)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: (transaction: {
+      amount: number
+      type: string
+      transaction_date: string
+      category_id?: string | null
+      description?: string | null
+      notes?: string | null
+    }) => api.post<Transaction>('/api/transactions', transaction),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-      toast.success('התנועה נוספה בהצלחה');
+      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ['monthly-summary'] })
+      queryClient.invalidateQueries({ queryKey: ['category-summary'] })
+      toast.success('התנועה נוספה בהצלחה')
     },
-    onError: (error) => {
-      toast.error('שגיאה בהוספת תנועה', {
-        description: error.message,
-      });
+    onError: (error: Error) => {
+      toast.error('שגיאה בהוספת תנועה', { description: error.message })
     },
-  });
+    meta: { user },
+  })
 }
 
-// ============================================================================
-// UPDATE TRANSACTION
-// ============================================================================
+// ─── Update ───────────────────────────────────────────────────────────────────
 export function useUpdateTransaction() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: {
-      id: string;
-      amount?: number;
-      type?: TransactionType;
-      transaction_date?: string;
-      category_id?: string | null;
-      description?: string | null;
-      notes?: string | null;
-    }) => {
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('transactions')
-        .update(updates as never)
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: ({ id, ...updates }: {
+      id: string
+      amount?: number
+      type?: string
+      transaction_date?: string
+      category_id?: string | null
+      description?: string | null
+      notes?: string | null
+    }) => api.put<Transaction>(`/api/transactions/${id}`, updates),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: transactionKeys.detail(variables.id) })
+      queryClient.invalidateQueries({ queryKey: ['monthly-summary'] })
+      toast.success('התנועה עודכנה בהצלחה')
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: transactionKeys.detail(variables.id) });
-      toast.success('התנועה עודכנה בהצלחה');
+    onError: (error: Error) => {
+      toast.error('שגיאה בעדכון תנועה', { description: error.message })
     },
-    onError: (error) => {
-      toast.error('שגיאה בעדכון תנועה', {
-        description: error.message,
-      });
-    },
-  });
+  })
 }
 
-// ============================================================================
-// DELETE TRANSACTION
-// ============================================================================
+// ─── Delete ───────────────────────────────────────────────────────────────────
 export function useDeleteTransaction() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      if (!user) throw new Error('User not authenticated');
-
-      const { error } = await supabase
-        .from('transactions')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => api.delete<void>(`/api/transactions/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-      toast.success('התנועה נמחקה בהצלחה');
+      queryClient.invalidateQueries({ queryKey: transactionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ['monthly-summary'] })
+      toast.success('התנועה נמחקה בהצלחה')
     },
-    onError: (error) => {
-      toast.error('שגיאה במחיקת תנועה', {
-        description: error.message,
-      });
+    onError: (error: Error) => {
+      toast.error('שגיאה במחיקת תנועה', { description: error.message })
     },
-  });
+  })
 }
 
-// ============================================================================
-// GET MONTHLY SUMMARY
-// ============================================================================
+// ─── Monthly summary ──────────────────────────────────────────────────────────
 export function useMonthlySummary(month?: string) {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   return useQuery({
     queryKey: ['monthly-summary', month],
-    queryFn: async () => {
-      if (!user) throw new Error('User not authenticated');
-
-      let query = supabase
-        .from('monthly_summary')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (month) {
-        query = query.eq('month', month);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return data;
+    queryFn: () => {
+      const qs = month ? `?month=${month}` : ''
+      return api.get<unknown[]>(`/api/summary/monthly${qs}`)
     },
     enabled: !!user,
-  });
+  })
 }
