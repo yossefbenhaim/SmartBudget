@@ -4,7 +4,8 @@
  */
 import { supabase } from './supabase'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://api.smart-budget.byclick.co.il'
+// Empty = same origin (path-based routing via Traefik, no CORS)
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 async function getToken(): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession()

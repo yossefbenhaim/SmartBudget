@@ -8,7 +8,7 @@ WORKDIR /app
 # VITE_ env vars — anon key is public (safe for frontend)
 ENV VITE_SUPABASE_URL=https://supabase.byclick.co.il
 ENV VITE_SUPABASE_ANON_KEY=eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3MDAwMDAwMDAsICJleHAiOiAyMDAwMDAwMDAwfQ.wTmOz3TCdhnx-swY9p2aHf6gvg9zgI0_TLTs8W28Ris
-ENV VITE_API_URL=https://api.smart-budget.byclick.co.il
+ENV VITE_API_URL=
 ENV VITE_APP_URL=https://smart-budget.byclick.co.il
 
 COPY package*.json ./
